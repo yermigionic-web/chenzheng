@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>侵爭 · 침쟁구역</title>
+
+<!-- ===================== 외부 폰트 ===================== -->
+<!-- Noto Serif HK : 광둥어(번체 한자) 디스플레이 / Black Han Sans : 한글 그런지 헤드라인 -->
+<!-- Noto Sans KR : 본문/UI / Galmuri : 한글 지원 64bit 픽셀 폰트(라벨용) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+HK:wght@600;900&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/projectnoonnu/2404-3@1.0/Galmuri11.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{
+  font-family:'Galmuri11';
+  src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404-3@1.0/Galmuri11.woff2') format('woff2');
+  font-display:swap;
+}
+
+/* ===================== 디자인 토큰 ===================== */
+:root{
+  --blood:#8b0000;
+  --blood-bright:#c01414;
+  --neon:#39ff14;
+  --neon-dim:#1f8a0c;
+  --ink:#0a0a0a;
+  --ash:#1a1614;
+  --ash-2:#241d1a;
+  --bone:#c9c2b6;
+  --bone-dim:#7d7568;
+  --rust:#5c1f1a;
+  --shadow:0 0 0 rgba(0,0,0,0);
+
+  --font-display:'Noto Serif HK', serif;
+  --font-han:'Black Han Sans', sans-serif;
+  --font-body:'Noto Sans KR', sans-serif;
+  --font-pixel:'Galmuri11','Noto Sans KR',sans-serif;
+}
+
+/* ===================== 리셋 ===================== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--ink);}
+body{
+  font-family:var(--font-body);
+  color:var(--bone);
+  position:relative;
+  user-select:none;
+}
+img{display:block;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+/* 픽셀 렌더링 권장(추후 삽입될 픽셀 이미지용) */
+.pixelated{image-rendering:pixelated;image-rendering:crisp-edges;}
+
+/* ===================== 공통 그래픽 : 핏빛 비네팅 + 필름 노이즈 ===================== */
+.vignette{
+  position:fixed;inset:0;pointer-events:none;z-index:90;
+  background:
+    radial-gradient(120% 90% at 50% 50%, transparent 38%, rgba(40,0,0,.55) 78%, rgba(0,0,0,.92) 100%);
+  mix-blend-mode:multiply;
+}
+.grain{
+  position:fixed;inset:-50%;pointer-events:none;z-index:91;opacity:.06;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation:grain 0.5s steps(3) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}33%{transform:translate(-3%,2%)}66%{transform:translate(2%,-3%)}100%{transform:translate(0,0)}
+}
+/* 스캔라인(레트로 CRT 느낌) */
+.scanlines{
+  position:fixed;inset:0;pointer-events:none;z-index:92;opacity:.18;
+  background:repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.5) 2px 3px);
+}
+
+/* ===================== 화면 컨테이너 ===================== */
+.screen{
+  position:fixed;inset:0;display:none;
+  align-items:center;justify-content:center;
+  flex-direction:column;
+  z-index:1;
+}
+.screen.active{display:flex;}
+
+/* 글로벌 페이드/블링크 오버레이 */
+#flash{
+  position:fixed;inset:0;background:#000;z-index:120;pointer-events:none;opacity:0;
+}
+#flash.blink{animation:blink .9s ease;}
+@keyframes blink{
+  0%{opacity:0}10%{opacity:1}22%{opacity:0}40%{opacity:.9}55%{opacity:0}100%{opacity:0}
+}
+#flash.fade{animation:fadeBlack .6s ease forwards;}
+@keyframes fadeBlack{0%{opacity:0}100%{opacity:1}}
+#flash.unfade{animation:unfadeBlack .6s ease forwards;}
+@keyframes unfadeBlack{0%{opacity:1}100%{opacity:0}}
+
+/* ============================================================
+   [1] 메인 화면
+   ============================================================ */
+#main{
+  background:
+    radial-gradient(80% 60% at 50% 30%, rgba(139,0,0,.35), transparent 70%),
+    radial-gradient(60% 50% at 50% 90%, rgba(57,255,20,.06), transparent 70%),
+    linear-gradient(160deg, var(--ink), var(--ash) 60%, #120606);
+}
+/* 배경: CSS로 그린 64bit 픽셀 도시 실루엣(이미지 없이) */
+.cityline{
+  position:absolute;left:0;right:0;bottom:0;height:42vh;pointer-events:none;opacity:.5;
+  background:
+    /* 간판 네온 점들 */
+    radial-gradient(2px 2px at 18% 60%, var(--neon), transparent),
+    radial-gradient(2px 2px at 62% 48%, var(--blood-bright), transparent),
+    radial-gradient(2px 2px at 80% 66%, var(--neon), transparent),
+    repeating-linear-gradient(90deg,
+      #0d0908 0 38px, #160d0b 38px 40px);
+  -webkit-mask:linear-gradient(to top, #000 30%, transparent);
+          mask:linear-gradient(to top, #000 30%, transparent);
+}
+.cityline::before{
+  /* 건물 블록(픽셀 계단형) */
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(to top,#1c1210 0 28%,transparent 28%) 0 0/120px 100%,
+    linear-gradient(to top,#140c0a 0 40%,transparent 40%) 60px 0/160px 100%,
+    linear-gradient(to top,#221512 0 20%,transparent 20%) 30px 0/90px 100%;
+  background-repeat:repeat-x;
+  image-rendering:pixelated;
+}
+/* 떠다니는 한자 잔상 */
+.ghost-han{
+  position:absolute;font-family:var(--font-display);font-weight:900;
+  color:rgba(139,0,0,.18);font-size:28vw;top:50%;left:50%;
+  transform:translate(-50%,-50%);pointer-events:none;letter-spacing:-.05em;
+  text-shadow:0 0 40px rgba(139,0,0,.3);
+}
+
+.logo-wrap{
+  position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:34px;
+  animation:floaty 5s ease-in-out infinite;
+}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* 로고: 테두리 없는 png에 네온 글로우 부여 (추후 삽입) */
+.logo{
+  width:min(62vw,300px);height:auto;
+  filter:
+    drop-shadow(0 0 6px var(--neon))
+    drop-shadow(0 0 18px rgba(57,255,20,.5))
+    drop-shadow(0 0 2px #fff);
+  animation:neonPulse 2.4s ease-in-out infinite;
+}
+@keyframes neonPulse{
+  0%,100%{filter:drop-shadow(0 0 6px var(--neon)) drop-shadow(0 0 18px rgba(57,255,20,.5))}
+  50%{filter:drop-shadow(0 0 12px var(--neon)) drop-shadow(0 0 34px rgba(57,255,20,.85)) drop-shadow(0 0 4px var(--blood-bright))}
+}
+/* 로고 이미지가 아직 없을 때 보일 대체 텍스트(이미지 삽입 후 자동으로 안 보임) */
+.logo-fallback{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(48px,18vw,120px);
+  color:var(--bone);letter-spacing:.05em;line-height:1;text-align:center;
+  text-shadow:0 0 8px var(--neon),0 0 24px rgba(57,255,20,.6),3px 3px 0 var(--blood);
+}
+.logo-sub{
+  font-family:var(--font-pixel);font-size:13px;letter-spacing:.5em;color:var(--neon);
+  opacity:.8;text-transform:uppercase;
+}
+
+.start-btn{
+  position:relative;z-index:3;margin-top:8px;
+  font-family:var(--font-pixel);font-size:15px;letter-spacing:.3em;
+  color:var(--bone);padding:14px 30px;
+  border:1px solid var(--neon-dim);
+  background:rgba(10,10,10,.5);
+  box-shadow:inset 0 0 16px rgba(57,255,20,.12);
+  animation:startBlink 1.6s steps(2,start) infinite;
+}
+.start-btn:active{transform:scale(.96);}
+@keyframes startBlink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ============================================================
+   [2] 선택형 게임 체험
+   ============================================================ */
+#play{
+  background:linear-gradient(180deg,#0c0605,#180b09);
+  justify-content:flex-start;
+}
+/* 길거리 배경(추후 이미지 삽입) — 임시 CSS 골목 */
+.street-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(70% 50% at 50% 18%, rgba(57,255,20,.08), transparent 60%),
+    linear-gradient(180deg,#120a08 0%, #1d100d 55%, #0a0504 100%);
+}
+.street-bg::after{
+  /* 원근 바닥 격자(핏빛) */
+  content:"";position:absolute;left:0;right:0;bottom:0;height:46%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 46px, rgba(139,0,0,.18) 46px 47px),
+    repeating-linear-gradient(0deg, transparent 0 30px, rgba(139,0,0,.10) 30px 31px);
+  transform:perspective(300px) rotateX(60deg);transform-origin:bottom;
+}
+/* DOOM식 플레이어 손(추후 이미지 삽입) — 자리표시 */
+.player-hand{
+  position:absolute;right:2vw;bottom:0;z-index:5;width:38vw;max-width:230px;height:32vh;
+  pointer-events:none;
+  /* 이미지 삽입 전 임시 실루엣 */
+  background:linear-gradient(to top, rgba(40,20,18,.9), transparent);
+  -webkit-mask:radial-gradient(60% 80% at 70% 100%, #000 40%, transparent 70%);
+          mask:radial-gradient(60% 80% at 70% 100%, #000 40%, transparent 70%);
+}
+/* 걷는 듯한 상하 흔들림 (선택 시 토글) */
+.walking{animation:walkBob .55s ease-in-out;}
+@keyframes walkBob{
+  0%{transform:translateY(0) rotate(0)}
+  25%{transform:translateY(-14px) rotate(-.4deg)}
+  50%{transform:translateY(4px) rotate(.3deg)}
+  75%{transform:translateY(-8px) rotate(-.2deg)}
+  100%{transform:translateY(0) rotate(0)}
+}
+
+.play-inner{position:relative;z-index:6;width:100%;height:100%;display:flex;flex-direction:column;}
+
+/* 선택 안내 문구 */
+.prompt-line{
+  margin:9vh auto 0;text-align:center;max-width:86%;
+  font-family:var(--font-display);font-weight:600;font-size:clamp(18px,5.4vw,30px);
+  color:var(--bone);line-height:1.5;
+  text-shadow:0 0 18px rgba(0,0,0,.9), 0 0 30px rgba(139,0,0,.5);
+}
+.prompt-line .red{color:var(--blood-bright);text-shadow:0 0 14px var(--blood-bright);}
+
+.choices{
+  margin-top:auto;margin-bottom:5vh;display:flex;flex-direction:column;gap:14px;
+  width:min(88%,460px);align-self:center;
+}
+.choice{
+  position:relative;text-align:left;
+  padding:16px 18px;
+  background:linear-gradient(100deg, rgba(36,24,22,.85), rgba(20,12,10,.85));
+  border:1px solid var(--rust);
+  border-left:4px solid var(--blood);
+  color:var(--bone);font-size:16px;font-weight:700;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  transition:transform .12s, border-color .2s, box-shadow .2s;
+  overflow:hidden;
+}
+.choice:hover{border-left-color:var(--neon);box-shadow:inset 0 0 22px rgba(57,255,20,.08);}
+.choice:active{transform:translateX(4px) scale(.99);}
+.choice .han{font-family:var(--font-display);font-weight:900;color:var(--blood-bright);font-size:20px;}
+.choice .arrow{font-family:var(--font-pixel);color:var(--neon);font-size:13px;opacity:.7;}
+.choice::after{
+  content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(57,255,20,.06));
+  opacity:0;transition:opacity .2s;
+}
+.choice:hover::after{opacity:1;}
+
+/* 캐릭터 대사 시퀀스 오버레이 */
+#dialogue{
+  position:absolute;inset:0;z-index:8;display:none;flex-direction:column;justify-content:flex-end;
+}
+#dialogue.active{display:flex;}
+/* 캐릭터별 배경(추후 이미지). 지금은 캐릭터 컬러 분위기로 */
+.dlg-bg{position:absolute;inset:0;z-index:0;transition:background .4s;}
+/* 우측 캐릭터 스탠딩(추후 이미지 삽입) — 자리표시 */
+.standing{
+  position:absolute;right:0;bottom:0;z-index:1;width:60vw;max-width:360px;height:80vh;
+  pointer-events:none;
+  /* 삽입 전 임시 실루엣 박스 */
+  background:linear-gradient(to top, rgba(0,0,0,.5), transparent 60%);
+  -webkit-mask:linear-gradient(to top,#000 60%,transparent);
+          mask:linear-gradient(to top,#000 60%,transparent);
+  animation:standIn .5s ease;
+}
+@keyframes standIn{0%{transform:translateX(40px);opacity:0}100%{transform:translateX(0);opacity:1}}
+.standing-tag{
+  position:absolute;right:4vw;top:14vh;z-index:2;text-align:right;pointer-events:none;
+}
+.standing-tag .han{font-family:var(--font-display);font-weight:900;font-size:clamp(34px,10vw,64px);
+  color:var(--blood-bright);text-shadow:0 0 20px rgba(192,20,20,.6),2px 2px 0 #000;line-height:1;}
+.standing-tag .kr{font-family:var(--font-pixel);font-size:13px;color:var(--neon);letter-spacing:.2em;margin-top:6px;}
+
+.dlg-box{
+  position:relative;z-index:3;margin:0 auto 4vh;width:min(92%,640px);
+  background:linear-gradient(180deg, rgba(12,7,6,.95), rgba(20,10,8,.97));
+  border:1px solid var(--rust);border-top:2px solid var(--blood);
+  box-shadow:0 0 0 1px #000, 0 -10px 40px rgba(0,0,0,.7), inset 0 0 30px rgba(139,0,0,.08);
+  padding:18px 20px 22px;
+}
+.dlg-name{
+  font-family:var(--font-display);font-weight:900;font-size:20px;color:var(--blood-bright);
+  margin-bottom:8px;display:flex;align-items:baseline;gap:10px;
+  text-shadow:0 0 12px rgba(192,20,20,.4);
+}
+.dlg-name .kr{font-family:var(--font-pixel);font-size:12px;color:var(--neon);letter-spacing:.15em;}
+.dlg-text{font-size:16px;line-height:1.85;color:var(--bone);min-height:5.2em;}
+.dlg-text em{color:var(--bone-dim);font-style:italic;font-size:14px;}
+.dlg-next{
+  position:absolute;right:16px;bottom:10px;font-family:var(--font-pixel);font-size:12px;color:var(--neon);
+  animation:nextBlink 1s steps(2) infinite;
+}
+@keyframes nextBlink{0%,100%{opacity:1}50%{opacity:0}}
+.dlg-progress{position:absolute;left:20px;bottom:12px;display:flex;gap:6px;}
+.dlg-progress i{width:18px;height:3px;background:var(--rust);display:block;}
+.dlg-progress i.on{background:var(--neon);box-shadow:0 0 8px var(--neon);}
+
+/* 세계관 인트로 텍스트 박스(게임 종료 후) */
+#lore-intro{
+  position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 50%, #160808, #050202);
+}
+#lore-intro.active{display:flex;}
+.lore-card{
+  width:min(88%,560px);text-align:center;
+  font-family:var(--font-display);font-weight:600;font-size:clamp(18px,5vw,26px);
+  line-height:1.9;color:var(--bone);
+  text-shadow:0 0 20px rgba(139,0,0,.5);
+  animation:loreFade .8s ease;
+}
+@keyframes loreFade{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+.lore-tap{margin-top:30px;font-family:var(--font-pixel);font-size:12px;color:var(--neon);letter-spacing:.3em;
+  animation:nextBlink 1.2s steps(2) infinite;}
+
+/* ============================================================
+   [3] 캐릭터 + 세계관 페이지
+   ============================================================ */
+#codex{
+  background:linear-gradient(180deg,#0a0706,#15100e);
+  justify-content:flex-start;align-items:stretch;
+}
+/* 오프닝: 로고 회전 */
+#codex-open{
+  position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  background:#060303;
+}
+#codex-open.done{display:none;}
+.spin-logo{
+  width:min(40vw,180px);
+  filter:drop-shadow(0 0 10px var(--neon)) drop-shadow(0 0 24px rgba(57,255,20,.5));
+  animation:spinLogo 1.6s cubic-bezier(.5,0,.3,1) forwards;
+}
+.spin-logo-fallback{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(50px,16vw,110px);
+  color:var(--bone);text-shadow:0 0 10px var(--neon),0 0 30px rgba(57,255,20,.6);
+  animation:spinLogo 1.6s cubic-bezier(.5,0,.3,1) forwards;
+}
+@keyframes spinLogo{
+  0%{transform:rotate(0) scale(.4);opacity:0}
+  30%{opacity:1}
+  100%{transform:rotate(1080deg) scale(1.1);opacity:0}
+}
+
+/* 상단 책갈피 탭 */
+.codex-head{
+  position:relative;z-index:5;padding:14px 16px 0;display:flex;gap:0;justify-content:center;
+  background:linear-gradient(180deg,#0a0605,transparent);
+}
+.tab{
+  position:relative;font-family:var(--font-display);font-weight:600;font-size:15px;
+  color:var(--bone-dim);padding:12px 26px 14px;
+  background:linear-gradient(180deg,#1c1210,#120b09);
+  border:1px solid var(--rust);border-bottom:none;
+  clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px));
+  letter-spacing:.1em;transition:color .2s, background .2s;
+}
+.tab:nth-child(2){clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);}
+.tab.active{color:var(--neon);background:linear-gradient(180deg,#241512,#1a0f0c);
+  box-shadow:0 -2px 12px rgba(57,255,20,.15) inset;}
+.tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--neon);box-shadow:0 0 10px var(--neon);}
+
+.codex-body{position:relative;z-index:4;flex:1;overflow:hidden;}
+.codex-pane{position:absolute;inset:0;display:none;}
+.codex-pane.active{display:flex;}
+
+/* ---------- 캐릭터 탭 ---------- */
+#pane-char{flex-direction:row;}
+.char-list{
+  width:38%;max-width:200px;overflow-y:auto;padding:14px 8px;
+  background:linear-gradient(180deg,rgba(10,6,5,.6),transparent);
+  border-right:1px solid var(--rust);
+  display:flex;flex-direction:column;gap:6px;
+}
+.char-row{
+  display:flex;align-items:center;gap:10px;padding:9px 8px;
+  border:1px solid transparent;border-left:3px solid var(--rust);
+  background:rgba(20,12,10,.5);transition:.15s;
+}
+.char-row:hover{border-left-color:var(--neon);background:rgba(36,24,22,.6);}
+.char-row.sel{border-left-color:var(--blood-bright);background:rgba(48,18,16,.7);}
+/* 픽셀 치비(추후 이미지 삽입) — 자리표시 박스 */
+.chibi{
+  width:34px;height:34px;flex-shrink:0;background:var(--ash-2);
+  border:1px solid var(--rust);image-rendering:pixelated;
+  /* 삽입 전 도트 패턴 */
+  background-image:
+    linear-gradient(45deg,var(--rust) 25%,transparent 25%),
+    linear-gradient(-45deg,var(--rust) 25%,transparent 25%);
+  background-size:8px 8px;
+}
+.char-row .nm{font-family:var(--font-pixel);font-size:12px;color:var(--bone);line-height:1.4;}
+.char-row .nm small{display:block;color:var(--bone-dim);font-size:10px;}
+
+.char-detail{flex:1;position:relative;overflow-y:auto;padding:18px 16px;}
+.char-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:var(--font-pixel);color:var(--bone-dim);font-size:13px;line-height:2;padding:0 20px;}
+
+/* 가챠 카드 오프닝 연출 */
+#gacha{
+  position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(circle,#1a0808,#050202);
+}
+#gacha.active{display:flex;}
+.gacha-card{
+  width:min(60%,220px);aspect-ratio:3/4;
+  background:linear-gradient(160deg,var(--rust),var(--ink));
+  border:2px solid var(--neon);
+  box-shadow:0 0 30px var(--neon),0 0 60px rgba(139,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  animation:gachaPop 2s ease forwards;
+}
+.gacha-card .han{font-family:var(--font-display);font-weight:900;font-size:48px;color:var(--neon);
+  text-shadow:0 0 20px var(--neon);}
+@keyframes gachaPop{
+  0%{transform:scale(.2) rotateY(180deg);opacity:0;filter:brightness(3)}
+  25%{opacity:1}
+  45%{transform:scale(1) rotateY(0);filter:brightness(1.4)}
+  80%{transform:scale(1);opacity:1}
+  100%{transform:scale(1.3);opacity:0;filter:brightness(2)}
+}
+.gacha-burst{position:absolute;width:140%;height:140%;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg, rgba(57,255,20,.12) 0 6deg, transparent 6deg 18deg);
+  animation:spinBurst 2s linear forwards;opacity:0;}
+@keyframes spinBurst{0%{opacity:0}30%{opacity:.8}100%{opacity:0;transform:rotate(120deg)}}
+
+/* 프로필 레이아웃 */
+.profile{display:flex;gap:14px;animation:loreFade .5s ease;}
+.profile-info{flex:1;min-width:0;}
+.p-han{font-family:var(--font-display);font-weight:900;font-size:clamp(30px,9vw,46px);
+  color:var(--blood-bright);line-height:1;text-shadow:0 0 16px rgba(192,20,20,.5),2px 2px 0 #000;}
+.p-pron{font-family:var(--font-pixel);font-size:12px;color:var(--neon);letter-spacing:.1em;margin:6px 0 14px;}
+.p-meta{display:flex;flex-direction:column;gap:7px;font-size:13px;}
+.p-meta .row{display:flex;gap:8px;border-bottom:1px dashed var(--rust);padding-bottom:6px;}
+.p-meta .k{color:var(--neon-dim);font-family:var(--font-pixel);font-size:11px;min-width:46px;flex-shrink:0;}
+.p-meta .v{color:var(--bone);}
+.p-quote{margin-top:14px;padding:12px 14px;border-left:3px solid var(--blood);
+  background:rgba(139,0,0,.08);font-family:var(--font-display);font-style:italic;
+  font-size:14px;line-height:1.7;color:var(--bone);}
+.p-home{margin-top:14px;display:flex;align-items:center;gap:10px;font-family:var(--font-pixel);font-size:11px;color:var(--bone-dim);}
+/* 거주지 픽셀 아이콘(추후 이미지 삽입) — 자리표시 */
+.home-icon{width:28px;height:28px;background:var(--ash-2);border:1px solid var(--neon-dim);image-rendering:pixelated;
+  background-image:linear-gradient(45deg,var(--neon-dim) 25%,transparent 25%);background-size:7px 7px;}
+/* 프로필 우측 스탠딩(추후 이미지 삽입) — 자리표시 */
+.profile-stand{width:34%;max-width:150px;flex-shrink:0;align-self:stretch;
+  background:linear-gradient(to top,rgba(139,0,0,.15),transparent);
+  border:1px dashed var(--rust);min-height:240px;position:relative;}
+.profile-stand span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-pixel);font-size:10px;color:var(--bone-dim);text-align:center;padding:8px;}
+
+/* ---------- 세계관 탭 (진짜 타일 그리드 쯔꾸르) ---------- */
+#pane-world{flex-direction:column;}
+.world-stage{flex:1;position:relative;overflow:hidden;
+  background:
+    radial-gradient(70% 60% at 50% 35%, rgba(57,255,20,.04), transparent 70%),
+    linear-gradient(180deg,#0a0706,#140c0a);
+  display:flex;align-items:center;justify-content:center;
+}
+/* 화면 미세 떨림(쯔꾸르 특유의 불안한 공기) */
+.world-stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:7;
+  background:radial-gradient(circle at 50% 45%, transparent 40%, rgba(10,2,2,.5) 90%);
+}
+
+/* 카메라: 플레이어 중심으로 맵 전체가 미끄러짐 */
+.world-cam{position:absolute;top:50%;left:50%;will-change:transform;
+  transition:transform .18s linear;}
+
+/* 타일맵 그리드 */
+#worldGrid{
+  display:grid;image-rendering:pixelated;position:relative;
+  /* 칸 수/크기는 JS에서 주입 */
+}
+.tile{position:relative;width:var(--ts);height:var(--ts);overflow:hidden;}
+
+/* --- 타일 종류별 픽셀 텍스처(분위기 위주) --- */
+/* 길: 젖은 아스팔트 + 핏물 얼룩 */
+.t-road{background:
+  radial-gradient(circle at 30% 70%, rgba(139,0,0,.10), transparent 50%),
+  repeating-linear-gradient(0deg,#17100e 0 3px,#140d0b 3px 6px);}
+.t-road::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 60% 30%, rgba(57,255,20,.05), transparent 60%);}
+/* 보도 가장자리 */
+.t-walk{background:repeating-linear-gradient(90deg,#221814 0 6px,#1b120f 6px 12px);}
+/* 벽/건물 외벽: 벽돌 + 창문 불빛 */
+.t-wall{background:
+  repeating-linear-gradient(0deg,#2a1813 0 5px,#1e0f0c 5px 10px),
+  repeating-linear-gradient(90deg,rgba(0,0,0,.4) 0 1px,transparent 1px 12px);
+  box-shadow:inset 0 0 0 1px #0a0605;}
+.t-wall.lit::after{content:"";position:absolute;width:6px;height:8px;left:5px;top:6px;
+  background:var(--neon);opacity:.35;box-shadow:14px 4px 0 rgba(192,20,20,.4),4px 16px 0 rgba(57,255,20,.3);}
+/* 지붕(어두운 윗면) */
+.t-roof{background:repeating-linear-gradient(45deg,#140c0a 0 4px,#0f0807 4px 8px);}
+/* 네온 간판 타일 */
+.t-sign{background:#0d0807;}
+.t-sign::after{content:"";position:absolute;inset:18% 12%;
+  border:2px solid var(--neon);box-shadow:0 0 8px var(--neon),inset 0 0 6px rgba(57,255,20,.4);
+  animation:signFlicker 3.2s steps(1) infinite;}
+@keyframes signFlicker{0%,92%,100%{opacity:1}94%{opacity:.2}96%{opacity:1}97%{opacity:.3}}
+/* 빈 어둠/막다른 곳 */
+.t-void{background:#070403;}
+
+/* 장소 핀(밟으면 발동) — 캐릭터 치비가 설 자리(추후 이미지 삽입) */
+.t-spot{cursor:default;}
+.spot-pin{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;z-index:3;}
+/* 치비 자리표시 박스 — 추후 이미지로 교체 */
+.spot-chibi{width:80%;height:80%;align-self:center;
+  background-image:linear-gradient(45deg,var(--rust) 25%,transparent 25%),
+    linear-gradient(-45deg,var(--rust) 25%,transparent 25%);
+  background-size:6px 6px;background-color:rgba(20,12,10,.7);
+  border:1px solid var(--neon-dim);image-rendering:pixelated;
+  animation:pinBob 1.6s ease-in-out infinite;}
+@keyframes pinBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.spot-label{position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-pixel);font-size:8px;white-space:nowrap;color:var(--neon);
+  background:rgba(8,4,3,.85);padding:1px 4px;border:1px solid var(--neon-dim);z-index:4;}
+/* 가까이 가면 핀 위 느낌표 */
+.spot-pin .mark{position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-pixel);font-size:12px;color:var(--blood-bright);opacity:0;
+  text-shadow:0 0 8px var(--blood-bright);}
+.t-spot.near .spot-pin .mark{opacity:1;animation:nextBlink 1s steps(2) infinite;}
+
+/* 플레이어 스프라이트 — 한 칸 차지, 카메라 중앙 고정 */
+#wPlayer{position:absolute;z-index:6;width:var(--ts);height:var(--ts);
+  display:flex;align-items:flex-end;justify-content:center;pointer-events:none;
+  transition:left .18s linear, top .18s linear;}
+/* 실제 캐릭터 스프라이트 이미지(추후 삽입) — 칸에 쏙 맞고 발밑이 바닥에 닿음 */
+.player-img{display:none;width:100%;height:100%;object-fit:contain;object-position:bottom center;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 0 6px rgba(57,255,20,.5)) drop-shadow(0 2px 0 rgba(139,0,0,.4));}
+/* src가 비어 있을 때 깨진 이미지 아이콘이 잠깐 보이지 않도록 기본 숨김.
+   src를 채우면 onload에서 자동으로 표시됩니다. */
+
+/* fallback 도트 박스(이미지 없을 때만 표시) */
+.player-dot{width:62%;height:78%;position:relative;align-self:center;
+  background:linear-gradient(180deg,#2b2420,#15100e);
+  border:1px solid var(--neon);box-shadow:0 0 10px rgba(57,255,20,.5);
+  image-rendering:pixelated;}
+.player-dot::before{content:"";position:absolute;left:50%;top:-3px;transform:translateX(-50%);
+  width:50%;height:30%;background:var(--bone);border:1px solid #000;}
+.player-dot::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
+  width:90%;height:4px;background:radial-gradient(ellipse,rgba(139,0,0,.7),transparent 70%);}
+/* 걷기 살짝 눌림 — 이미지/도트 둘 다에 적용되도록 칸 전체에 건다 */
+#wPlayer.step .player-img,#wPlayer.step .player-dot{animation:stepSquash .18s ease;}
+@keyframes stepSquash{0%{transform:scaleY(.85) scaleX(1.1)}100%{transform:scaleY(1) scaleX(1)}}
+
+/* 상단 미니 안내(현재 구역 이름) */
+.world-hud{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:9;
+  font-family:var(--font-pixel);font-size:11px;color:var(--neon);
+  background:rgba(8,4,3,.8);border:1px solid var(--neon-dim);padding:5px 12px;
+  letter-spacing:.1em;white-space:nowrap;max-width:90%;text-align:center;}
+.world-hint{position:absolute;top:38px;left:50%;transform:translateX(-50%);z-index:9;
+  font-family:var(--font-pixel);font-size:9px;color:var(--bone-dim);white-space:nowrap;}
+
+/* 장소 도착 팝업 */
+.world-popup{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:10;
+  width:min(90%,520px);
+  background:linear-gradient(180deg,rgba(12,7,6,.97),rgba(20,10,8,.98));
+  border:1px solid var(--rust);border-top:2px solid var(--blood);
+  box-shadow:0 -8px 30px rgba(0,0,0,.7);
+  padding:14px 16px;display:none;animation:loreFade .3s ease;
+}
+.world-popup.show{display:block;}
+.world-popup h4{font-family:var(--font-display);font-weight:900;color:var(--blood-bright);font-size:16px;margin-bottom:6px;}
+.world-popup p{font-size:13px;line-height:1.7;color:var(--bone);}
+.world-popup .spots{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+.world-popup .spot{font-family:var(--font-pixel);font-size:10px;color:var(--neon);
+  border:1px solid var(--neon-dim);padding:3px 7px;}
+.world-popup .close-x{position:absolute;right:10px;top:8px;font-family:var(--font-pixel);
+  font-size:12px;color:var(--bone-dim);cursor:pointer;}
+
+/* 모바일 방향키(디자인 통일) */
+.dpad{position:absolute;right:16px;bottom:16px;z-index:11;width:126px;height:126px;}
+.dpad button{position:absolute;width:40px;height:40px;
+  background:linear-gradient(180deg,#241512,#140b09);border:1px solid var(--rust);
+  color:var(--neon);font-family:var(--font-pixel);font-size:15px;
+  box-shadow:inset 0 0 10px rgba(57,255,20,.1);}
+.dpad button:active{background:var(--rust);transform:scale(.92);}
+.dpad .up{left:43px;top:0;}
+.dpad .down{left:43px;bottom:0;}
+.dpad .left{left:0;top:43px;}
+.dpad .right{right:0;top:43px;}
+.dpad .mid{left:43px;top:43px;width:40px;height:40px;border-style:dashed;color:var(--bone-dim);
+  display:flex;align-items:center;justify-content:center;font-size:11px;}
+
+/* ============================================================
+   플로팅 뮤직 플레이어 (모든 페이지 공통)
+   ============================================================ */
+#mini-music{
+  position:fixed;left:14px;bottom:14px;z-index:100;display:none;
+}
+#mini-music.show{display:block;}
+.mm-orb{
+  width:50px;height:50px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--blood-bright), var(--ink));
+  border:2px solid var(--neon);box-shadow:0 0 16px rgba(57,255,20,.5),inset 0 0 10px rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-pixel);font-size:18px;color:var(--neon);
+  animation:spinOrb 6s linear infinite;
+}
+.mm-orb.paused{animation-play-state:paused;border-color:var(--bone-dim);color:var(--bone-dim);box-shadow:none;}
+@keyframes spinOrb{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+/* 펼쳐지는 플레이어 패널 */
+.mm-panel{
+  position:fixed;left:14px;bottom:74px;z-index:101;display:none;
+  width:min(80vw,300px);
+  background:linear-gradient(180deg,rgba(14,8,7,.98),rgba(22,11,9,.98));
+  border:1px solid var(--rust);border-top:2px solid var(--neon);
+  box-shadow:0 -8px 40px rgba(0,0,0,.7),0 0 0 1px #000;
+  padding:16px;
+}
+.mm-panel.show{display:block;animation:loreFade .25s ease;}
+.mm-title{font-family:var(--font-display);font-weight:900;color:var(--blood-bright);font-size:16px;margin-bottom:2px;}
+.mm-artist{font-family:var(--font-pixel);font-size:10px;color:var(--neon);letter-spacing:.15em;margin-bottom:12px;}
+.mm-controls{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mm-controls button{width:40px;height:40px;border:1px solid var(--rust);background:rgba(36,24,22,.6);
+  color:var(--neon);font-family:var(--font-pixel);font-size:14px;}
+.mm-controls button:active{background:var(--rust);}
+.mm-bar{flex:1;height:4px;background:var(--ash-2);position:relative;overflow:hidden;}
+.mm-bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--neon);box-shadow:0 0 8px var(--neon);}
+.mm-lyrics{max-height:130px;overflow-y:auto;font-size:12px;line-height:1.9;color:var(--bone-dim);
+  border-top:1px dashed var(--rust);padding-top:10px;}
+.mm-lyrics b{color:var(--bone);}
+
+/* ===================== 스크롤바 ===================== */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#0a0605;}
+::-webkit-scrollbar-thumb{background:var(--rust);}
+
+/* ===================== 접근성: 모션 줄이기 ===================== */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;animation-iteration-count:1!important;}
+}
+
+/* 데스크탑 보정 */
+@media (min-width:768px){
+  .player-hand{max-width:300px;}
+  .standing{max-width:420px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 글로벌 그래픽 레이어 -->
+<div class="vignette"></div>
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div id="flash"></div>
+
+<!-- 배경음악 -->
+<audio id="bgm" loop preload="auto" src="https://github.com/yermigionic-web/chenzheng/raw/refs/heads/main/nbg.mp3"></audio>
+
+<!-- ============================================================
+     [1] 메인 화면
+     ============================================================ -->
+<section id="main" class="screen active">
+  <div class="ghost-han">侵</div>
+  <div class="cityline"></div>
+  <div class="logo-wrap">
+    <!-- 로고 이미지: 테두리 없는 png. 삽입 시 .logo-fallback 줄을 지우세요 -->
+    <img class="logo" src="https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/xjlogo.png"
+         alt="侵爭" onerror="this.style.display='none';document.getElementById('logoFb').style.display='block';">
+    <div id="logoFb" class="logo-fallback" style="display:none;">侵爭</div>
+    <div class="logo-sub">CHIMJAENG ZONE</div>
+  </div>
+  <button class="start-btn" onclick="startGame()">▶ TOUCH TO START</button>
+</section>
+
+<!-- ============================================================
+     [2] 선택형 게임 체험
+     ============================================================ -->
+<section id="play" class="screen">
+  <!-- 길거리 배경: 추후 이미지로 교체 (.street-bg 를 background-image 로) -->
+  <div class="street-bg"></div>
+  <!-- DOOM식 손: 추후 이미지 삽입 (.player-hand 에 background-image) -->
+  <div class="player-hand"></div>
+
+  <div class="play-inner" id="playInner">
+    <p class="prompt-line">내 발밑의 <span class="red">붉음</span>을 기억한다.<br>어디에 들러야 할까?</p>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- 대사 시퀀스 -->
+  <div id="dialogue">
+    <div class="dlg-bg" id="dlgBg"></div>
+    <!-- 캐릭터 스탠딩: 추후 이미지 삽입 (.standing 에 background-image) -->
+    <div class="standing" id="dlgStanding"></div>
+    <div class="standing-tag" id="dlgTag"></div>
+    <div class="dlg-box" onclick="nextDialogue()">
+      <div class="dlg-name" id="dlgName"></div>
+      <div class="dlg-text" id="dlgText"></div>
+      <div class="dlg-progress" id="dlgProg"></div>
+      <div class="dlg-next">TAP ▶</div>
+    </div>
+  </div>
+
+  <!-- 게임 종료 후 세계관 인트로 -->
+  <div id="lore-intro" onclick="nextLore()">
+    <div>
+      <div class="lore-card" id="loreCard"></div>
+      <div class="lore-tap">TAP TO CONTINUE</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     [3] 캐릭터 + 세계관 페이지
+     ============================================================ -->
+<section id="codex" class="screen">
+  <!-- 오프닝: 로고 회전 -->
+  <div id="codex-open">
+    <img class="spin-logo" src="https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/xjlogo.png"
+         alt="侵爭" onerror="this.style.display='none';document.getElementById('spinFb').style.display='block';">
+    <div id="spinFb" class="spin-logo-fallback" style="display:none;">侵爭</div>
+  </div>
+
+  <div class="codex-head">
+    <button class="tab active" data-pane="char" onclick="switchTab('char')">人物 인물</button>
+    <button class="tab" data-pane="world" onclick="switchTab('world')">區域 세계관</button>
+  </div>
+
+  <div class="codex-body">
+    <!-- 캐릭터 탭 -->
+    <div class="codex-pane active" id="pane-char">
+      <div class="char-list" id="charList"></div>
+      <div class="char-detail">
+        <div class="char-empty" id="charEmpty">좌측에서 인물을 선택하면<br>프로필이 열립니다.<br><br>侵爭 — 침쟁구역의 여섯</div>
+        <div id="charProfile" style="display:none;"></div>
+      </div>
+      <!-- 가챠 오프닝 연출 -->
+      <div id="gacha"><div class="gacha-burst"></div><div class="gacha-card"><span class="han" id="gachaHan"></span></div></div>
+    </div>
+
+    <!-- 세계관 탭 -->
+    <div class="codex-pane" id="pane-world">
+      <div class="world-stage" id="worldStage">
+        <div class="world-hud" id="worldHud">侵爭 · 사거리 중앙</div>
+        <div class="world-hint" id="worldHint">↑↓←→ 로 한 칸씩 이동 · 장소 앞에서 멈추면 열람</div>
+
+        <!-- 카메라(플레이어 따라 이동) → 그리드 주입 -->
+        <div class="world-cam" id="worldCam">
+          <div id="worldGrid"></div>
+          <!-- 플레이어 스프라이트 -->
+          <div id="wPlayer">
+            <!-- 플레이어 스프라이트: 추후 GitHub 이미지 링크를 src에 넣으세요.
+                 칸(40x40)에 맞춰 자동으로 들어가며, 발밑이 칸 바닥에 정렬됩니다.
+                 이미지가 없거나 로드 실패 시 아래 도트 박스(.player-dot)가 대신 표시됩니다. -->
+            <img id="wSpriteImg" class="player-img" alt="플레이어"
+                 src=""
+                 onerror="this.style.display='none';document.getElementById('wSpriteDot').style.display='block';"
+                 onload="if(this.getAttribute('src')){this.style.display='block';document.getElementById('wSpriteDot').style.display='none';}">
+            <div class="player-dot" id="wSpriteDot"></div>
+          </div>
+        </div>
+
+        <!-- 장소 도착 팝업 -->
+        <div class="world-popup" id="wPopup">
+          <span class="close-x" onclick="closeWorldPopup()">✕</span>
+          <h4 id="wTitle"></h4>
+          <p id="wDesc"></p>
+          <div class="spots" id="wSpots"></div>
+        </div>
+
+        <!-- 모바일 방향키 -->
+        <div class="dpad">
+          <button class="up" onclick="movePlayer(0,-1)">▲</button>
+          <button class="left" onclick="movePlayer(-1,0)">◀</button>
+          <button class="mid">侵</button>
+          <button class="right" onclick="movePlayer(1,0)">▶</button>
+          <button class="down" onclick="movePlayer(0,1)">▼</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     플로팅 뮤직 플레이어
+     ============================================================ -->
+<div id="mini-music">
+  <div class="mm-orb" id="mmOrb" onclick="toggleMusicPanel()">♪</div>
+</div>
+<div class="mm-panel" id="mmPanel">
+  <div class="mm-title">名 不詳 · Lorem</div>
+  <div class="mm-artist">侵爭 ORIGINAL SOUNDTRACK</div>
+  <div class="mm-controls">
+    <button onclick="musicPlayPause()" id="mmPlayBtn">∥</button>
+    <button onclick="musicRestart()">↺</button>
+    <div class="mm-bar"><i id="mmBar"></i></div>
+  </div>
+  <div class="mm-lyrics" id="mmLyrics">
+    <!-- 가사: 창작곡 — 추후 직접 삽입 예정 -->
+    <b>[가사 삽입 영역]</b><br>
+    Lorem ipsum dolor sit amet,<br>
+    consectetur adipiscing elit, sed do<br>
+    eiusmod tempor incididunt ut labore.<br>
+    Ut enim ad minim veniam, quis nostrud<br>
+    exercitation ullamco laboris nisi.<br>
+    <span style="color:var(--neon-dim)">— 추후 실제 가사로 교체하세요 —</span>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   데이터
+   ============================================================ */
+const CHARS = {
+  meat:{
+    han:"黎國謙", kr:"이국겸", pron:"라이구컴 · Lai Gwok-im",
+    gender:"여성", age:"35세", job:"정육점 주인",
+    info:"인륜이라는 단어를 버린 손으로, 자기만의 룰만은 결벽적으로 지킨다. 뒤탈은 남기지 않는다. 일은 일.",
+    tone:"과묵한 싸늘한 반말. 보호욕을 츤데레로 감춘다.",
+    quote:"…원수였든 아니든, 그딴 건 묻지 않아. 다만 오늘 밤 네 손은 깨끗해질 거야. 그게 내 일이고.",
+    home:"南 · 정육점", color:"#3a0c0c", standDesc:"이국겸 스탠딩\n(추후 삽입)"
+  },
+  mech:{
+    han:"邱建明", kr:"구건명", pron:"야우컨밍 · Yau Kin Ming",
+    gender:"여성", age:"29세", job:"기계 정비공",
+    info:"속을 알 수 없는 나른함. 그러나 자신이 그은 선 — 자기 삶과 직업 — 은 절대 넘지 않는다.",
+    tone:"존댓말과 반말이 뒤섞인 능청. 멘탈은 단단하다.",
+    quote:"죽었다고요? 안됐네. 근데 남겨진 것들은 누가 챙겨요. 그것까진 생각 안 했죠, 다들.",
+    home:"南 · 정비소", color:"#0c2a1a", standDesc:"구건명 스탠딩\n(추후 삽입)"
+  },
+  doctor:{
+    han:"張麗善", kr:"장려선", pron:"청라이신 · Cheung Lai Sin",
+    gender:"여성", age:"28세", job:"불법 의사",
+    info:"헌신적으로 치료하지만, 치료는 그녀의 자기만족이기도 하다. 낫게 하면서, 낫지 않기를 바란다.",
+    tone:"느리고 곱씹는 존댓말. '요'를 늘이며 오래 말한다.",
+    quote:"아―파요? 선생님. 제가요, 봐 드릴게요. 제 벙커로요. 같―이, 가―요.",
+    home:"西 · 의사 벙커", color:"#241f2a", standDesc:"장려선 스탠딩\n(추후 삽입)"
+  },
+  house:{
+    han:"林希彤", kr:"임희동", pron:"람헤이텅 · Lam Hei Tung",
+    gender:"여성", age:"38세", job:"타짜",
+    info:"대부분에 무심하지만, 흥미로운 대상만은 집요하게 공부한다. 전공은 하이로우.",
+    tone:"성숙한 반존대. 포커페이스를 깨지 않는다.",
+    quote:"그 카드는 뒤집지 마세요, 아가씨. 더러운 건… 들키기 전까지만 패가 되거든요.",
+    home:"東 · 하우스(도박판)", color:"#2a230c", standDesc:"임희동 스탠딩\n(추후 삽입)"
+  },
+  police:{
+    han:"张海霖", kr:"장해림", pron:"청호이람 · Cheung Hoi Lam",
+    gender:"여성", age:"41세", job:"부패 경찰",
+    info:"모든 걸 포기한 천하태평. 그러나 한때 진짜 관리관이었던 실력의 흔적이 가끔 새어나온다.",
+    tone:"나른하고 능글맞은 친근한 반말. 한 걸음 떨어져 구경한다.",
+    quote:"사람을 죽였어? 아하. 그것참 큰일이네 ― 라고, 여기 침쟁구역에선 아무도 안 적어주거든.",
+    home:"東 · 파출소", color:"#2a1a0c", standDesc:"장해림 스탠딩\n(추후 삽입)"
+  },
+  cleaner:{
+    han:"清巢", kr:"청소", pron:"칭 차우 · Ching Chau",
+    gender:"여성", age:"23세", job:"청소부",
+    info:"광기와 순종이 예측 불가하게 섞인다. 다음 행동을 읽을 수 없는 긴장이 곧 이 사람의 축이다.",
+    tone:"경박하고 괴이한 존댓말. 가끔 한 단어를 띄어쓰기 없이 강박적으로 반복한다.",
+    quote:"닦을게요닦을게요. 바닥이 빨개도요, 비가 와도요, 우산은요… 아, 까먹었다. 닦을게요.",
+    home:"北 · 어스름", color:"#0c2226", standDesc:"청소 스탠딩\n(추후 삽입)"
+  }
+};
+const CHAR_ORDER = ["meat","mech","doctor","house","police","cleaner"];
+
+// 게임 체험 선택지(장소 → 캐릭터)
+const PLACES = [
+  {key:"meat",   place:"정육점",   sub:"肉店"},
+  {key:"mech",   place:"정비소",   sub:"修理"},
+  {key:"doctor", place:"지하 벙커", sub:"地堡"},
+  {key:"house",  place:"하우스",   sub:"賭場"},
+  {key:"police", place:"경찰서",   sub:"差館"},
+  {key:"cleaner",place:"어스름",   sub:"黃昏"}
+];
+
+// 캐릭터별 게임 대사 4개 (예시대사 인용 금지 → 새로 창작)
+const DIALOGUES = {
+  meat:[
+    {t:"<em>*중식도가 도마를 한 번 내려친다. 국겸은 고개를 들지 않는다.*</em>"},
+    {t:"신선하네. 들어와. 문은 닫고."},
+    {t:"<em>*그녀가 손등으로 이마의 피를 훔친다.*</em> 묻지 마. 누구였는지, 왜였는지. 나한텐 다 같은 무게야."},
+    {t:"네 손, 떨고 있잖아. …앉아. 따뜻한 거라도 줄 테니까. 그 다음은, 내가 알아서 할게."}
+  ],
+  mech:[
+    {t:"<em>*몽키스패너가 철판 위에서 가볍게 굴러간다. 휘파람 소리.*</em>"},
+    {t:"어서 와요. 손님은 오랜만이네. 그것도, 이런 시간에."},
+    {t:"<em>*건명이 기름 묻은 장갑을 천천히 벗는다.*</em> 고장 난 거 가져왔어요? 사람이든 기계든, 고친 적은 많은데."},
+    {t:"농담이고. …앉아서 좀 쉬어요. 여긴 아무도 안 찾아오니까. 그게 이 동네 유일한 장점이거든."}
+  ],
+  doctor:[
+    {t:"<em>*어둠 속에서 주사기 케이스가 짤그랑거린다.*</em>"},
+    {t:"…선생님. 오셨네―요. 기다렸―어요. 정말로요."},
+    {t:"<em>*려선이 쪼그린 채 고개만 들어 올린다.*</em> 어디가요. 아픈 데가요. 말해 주―세요. 제가요, 다 알거든요. 이 몸의요."},
+    {t:"낫게 해 드릴―게요. 천천―히요. …너무 빨리 나으면요, 선생님이요, 안 오시잖―아요."}
+  ],
+  house:[
+    {t:"<em>*칩 더미를 손끝으로 무너뜨리며, 희동이 고개를 든다.*</em>"},
+    {t:"앉으세요, 아가씨. 자리는 비어 있어요. 늘 비어 있죠 ― 누군가 사라진 자리니까."},
+    {t:"<em>*그녀가 카드 한 장을 손가락 사이에서 돌린다.*</em> 운을 믿어요? 난 안 믿어요. 믿는 건 패를 읽는 눈뿐이야."},
+    {t:"흥미롭네, 당신. …오래 살아남는 쪽에 한 판 걸어 볼까요. 물론, 내가 딸 쪽으로."}
+  ],
+  police:[
+    {t:"<em>*의자를 뒤로 젖힌 채, 해림이 한쪽 눈을 뜬다.*</em>"},
+    {t:"어이. 경찰서를 제 발로 찾아오는 인간은 둘 중 하나야. 멍청하거나, 갈 데가 없거나."},
+    {t:"<em>*그녀가 느릿하게 일어나 팔짱을 낀다.*</em> 손에 묻은 거, 안 닦았네. 뭐, 여기선 증거도 다 마른 먼지가 돼."},
+    {t:"신고하러 온 건 아닐 테고. …앉아. 술이나 한잔해. 잡아넣는 건, 그 다음에 생각하자고."}
+  ],
+  cleaner:[
+    {t:"<em>*양동이가 끌리는 소리. 청소가 모퉁이에서 불쑥 나타난다.*</em>"},
+    {t:"손님손님. 바닥 조심하세요. 빨간 거요, 아직 안 말랐거든요."},
+    {t:"<em>*그녀가 대걸레를 어깨에 걸친다.*</em> 닦으면요, 없어져요. 다요. 사람도요, 흔적도요. 제가요, 그런 거 잘하거든요."},
+    {t:"퀴즈 하나 내도 돼요? …아니다. 먼저 닦을게요. 닦고 나서요. 닦고, 나서요."}
+  ]
+};
+
+// 게임 종료 후 세계관 인트로 4문장
+const LORE_INTRO = [
+  "이곳에 법은 도착하지 않는다. 도착한 적도 없다.",
+  "여섯 개의 문이 있고, 너는 그 전부를 두드렸다.",
+  "붉음은 발밑에서 마르지 않고, 이름들은 골목마다 고여 있다.",
+  "侵爭 ― 침쟁구역. 이제, 그 안으로 들어선다."
+];
+
+// 세계관 맵 구역 데이터
+const ZONES = {
+  n:{title:"北 · 어스름 (북쪽 구역)", desc:"폭이 좁고 어두운 골목. 청소의 청소도구들만 어지럽게 널브러져 있다. 사람보다 정적이 먼저 산다.", spots:["청소의 자리"]},
+  w:{title:"西 · 폐허 (서쪽 구역)", desc:"버려진 창고와 무너진 건물이 이어진다. 그 깊은 곳에 장려선의 의사 벙커가 숨어 있다.", spots:["장려선 · 의사 벙커"]},
+  e:{title:"東 · 철골 (동쪽 구역)", desc:"높은 철골 건물과 오래된 아파트가 층층이 겹친다. 임희동의 하우스와 장해림의 파출소가 마주 본다.", spots:["임희동 · 하우스","장해림 · 파출소"]},
+  s:{title:"南 · 상점가 (남쪽 구역)", desc:"좁은 주택가와 상점이 뒤섞인 거리. 이국겸의 정육점과 구건명의 정비소가 나란히 불을 켠다.", spots:["이국겸 · 정육점","구건명 · 정비소"]}
+};
+
+/* ============================================================
+   타일맵 (진짜 쯔꾸르식 그리드)
+   범례:
+     . 길(걸을 수 있음)    , 보도
+     # 벽/외벽            W 창문 켜진 벽
+     R 지붕(못 지나감)     S 네온 간판(벽)
+     공백/x 어둠(벽)
+   숫자 1~6 = 장소 핀(밟으면 그 구역 팝업), P=시작 위치(=길)
+   배치: 중앙 사거리에서 北(위)/西(좌)/東(우)/南(아래)로 길이 뻗음
+   ============================================================ */
+const MAP_LEGEND = {
+  '.':'road', ',':'walk', '#':'wall', 'W':'wall lit',
+  'R':'roof', 'S':'sign', 'x':'void', ' ':'void', 'P':'road'
+};
+const WALKABLE = new Set(['.', ',', 'P', '1','2','3','4','5','6']);
+
+// 핀 번호 → 구역키 + 라벨 (캐릭터 치비가 설 자리)
+const SPOT_DEF = {
+  '1':{zone:'n', label:'어스름'},        // 北 청소
+  '2':{zone:'w', label:'의사 벙커'},      // 西 장려선
+  '3':{zone:'e', label:'하우스'},        // 東 임희동
+  '4':{zone:'e', label:'파출소'},        // 東 장해림
+  '5':{zone:'s', label:'정육점'},        // 南 이국겸
+  '6':{zone:'s', label:'정비소'}         // 南 구건명
+};
+
+// 17열 x 17행. 가독성을 위해 문자열 행으로.
+const WORLD_MAP = [
+  "RRRRRRRSWS RRRRRR",
+  "R##W#W#.#W#W##W#R",
+  "R#....,.1.,....#R",
+  "R#.##,.###.,.##.R",
+  "W#.#W..,.,.,W#.#W",
+  "R,.,.##,.,##.,.,R",
+  "SW2.,.,...,.,.3WS",
+  "R#,###..P..###,#R",
+  " ...........,... ",
+  "R#,###..,..###,#R",
+  "SW.,.,..4..,.,.WS",
+  "R,.,.##,.,##.,.,R",
+  "W#.#W.,.,.,.W#.#W",
+  "R#.##,.###.,.##.R",
+  "R#..5.,.,.,.6..#R",
+  "R##W#W#.#W#W##W#R",
+  "RRRRRRRS.SRRRRRRR"
+];
+
+/* ============================================================
+   상태
+   ============================================================ */
+let visited = new Set();        // 게임 체험에서 열람한 캐릭터
+let dlgIndex = 0;
+let dlgQueue = [];
+let dlgCurrentChar = null;
+let loreIndex = 0;
+let musicReady = false;
+
+const bgm = document.getElementById('bgm');
+
+/* ============================================================
+   화면 전환 유틸
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function flash(type, cb, dur=900){
+  const f=document.getElementById('flash');
+  f.className=''; void f.offsetWidth; f.classList.add(type);
+  if(cb) setTimeout(cb, dur);
+}
+
+/* ============================================================
+   [1] → [2] 시작
+   ============================================================ */
+function startGame(){
+  // 음악 재생(사용자 제스처)
+  bgm.volume=0.7;
+  bgm.play().then(()=>{musicReady=true;}).catch(()=>{});
+  document.getElementById('mini-music').classList.add('show');
+
+  flash('blink', ()=>{
+    showScreen('play');
+    renderChoices();
+  }, 950);
+}
+
+/* ============================================================
+   [2] 선택지 렌더 (랜덤 3개, 방문한 건 제외)
+   ============================================================ */
+function renderChoices(){
+  const box=document.getElementById('choices');
+  box.innerHTML='';
+
+  const remaining = PLACES.filter(p=>!visited.has(p.key));
+
+  // 전부 열람 완료 → 세계관 인트로로
+  if(remaining.length===0){
+    startLoreIntro();
+    return;
+  }
+
+  // 랜덤 셔플 후 최대 3개
+  const shuffled=[...remaining].sort(()=>Math.random()-0.5);
+  const pick=shuffled.slice(0, Math.min(3, shuffled.length));
+
+  pick.forEach(p=>{
+    const c=CHARS[p.key];
+    const btn=document.createElement('button');
+    btn.className='choice';
+    btn.innerHTML=`<span><span class="han">${p.sub}</span> &nbsp;${p.place}</span><span class="arrow">▶ 들르기</span>`;
+    btn.onclick=()=>enterDialogue(p.key);
+    box.appendChild(btn);
+  });
+}
+
+/* ============================================================
+   [2] 선택 → 걷기 흔들림 → 대사 시퀀스
+   ============================================================ */
+function enterDialogue(key){
+  const inner=document.getElementById('playInner');
+  inner.classList.add('walking');
+
+  flash('fade', ()=>{
+    inner.classList.remove('walking');
+    const c=CHARS[key];
+
+    // 배경/스탠딩/태그 세팅
+    document.getElementById('dlgBg').style.background=
+      `radial-gradient(70% 60% at 30% 40%, ${c.color}, #060303 80%)`;
+    document.getElementById('dlgTag').innerHTML=
+      `<div class="han">${c.han}</div><div class="kr">${c.pron}</div>`;
+
+    document.getElementById('dialogue').classList.add('active');
+    document.getElementById('playInner').style.display='none';
+
+    // 대사 큐
+    dlgCurrentChar=key;
+    dlgQueue=DIALOGUES[key];
+    dlgIndex=0;
+    renderDialogueProgress();
+    showDialogueLine();
+
+    flash('unfade', null, 600);
+  }, 600);
+}
+
+function renderDialogueProgress(){
+  const p=document.getElementById('dlgProg');
+  p.innerHTML='';
+  dlgQueue.forEach((_,i)=>{
+    const i2=document.createElement('i');
+    if(i<=dlgIndex) i2.classList.add('on');
+    p.appendChild(i2);
+  });
+}
+function showDialogueLine(){
+  const c=CHARS[dlgCurrentChar];
+  document.getElementById('dlgName').innerHTML=
+    `${c.han}<span class="kr">${c.kr}</span>`;
+  document.getElementById('dlgText').innerHTML=dlgQueue[dlgIndex].t;
+  renderDialogueProgress();
+}
+function nextDialogue(){
+  dlgIndex++;
+  if(dlgIndex>=dlgQueue.length){
+    // 대사 종료 → 해당 선택지 소진 → 선택 화면 복귀
+    visited.add(dlgCurrentChar);
+    flash('fade', ()=>{
+      document.getElementById('dialogue').classList.remove('active');
+      document.getElementById('playInner').style.display='flex';
+      renderChoices();
+      flash('unfade', null, 600);
+    }, 600);
+    return;
+  }
+  showDialogueLine();
+}
+
+/* ============================================================
+   [2] → 세계관 인트로 4컷 → [3]
+   ============================================================ */
+function startLoreIntro(){
+  loreIndex=0;
+  const li=document.getElementById('lore-intro');
+  li.classList.add('active');
+  document.getElementById('loreCard').textContent=LORE_INTRO[0];
+}
+function nextLore(){
+  loreIndex++;
+  const card=document.getElementById('loreCard');
+  if(loreIndex>=LORE_INTRO.length){
+    flash('fade', ()=>{
+      document.getElementById('lore-intro').classList.remove('active');
+      showScreen('codex');
+      startCodexOpen();
+      flash('unfade', null, 600);
+    }, 600);
+    return;
+  }
+  card.style.animation='none'; void card.offsetWidth; card.style.animation='loreFade .8s ease';
+  card.textContent=LORE_INTRO[loreIndex];
+}
+
+/* ============================================================
+   [3] 오프닝: 로고 회전 후 캐릭터 페이지
+   ============================================================ */
+function startCodexOpen(){
+  const open=document.getElementById('codex-open');
+  open.classList.remove('done');
+  buildCharList();
+  buildWorldStart();
+  setTimeout(()=>{ open.classList.add('done'); }, 1650);
+}
+
+/* 탭 전환 */
+function switchTab(pane){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.pane===pane));
+  document.getElementById('pane-char').classList.toggle('active', pane==='char');
+  document.getElementById('pane-world').classList.toggle('active', pane==='world');
+  // 세계관 탭은 숨겨진 상태에서 카메라 계산이 어긋날 수 있어 진입 시 다시 잡아준다
+  if(pane==='world'){
+    requestAnimationFrame(()=>{ if(worldBuilt){ centerCamera(); highlightNearSpots(); } });
+  }
+}
+
+/* 캐릭터 리스트(픽셀 치비 + 이름) */
+function buildCharList(){
+  const list=document.getElementById('charList');
+  list.innerHTML='';
+  CHAR_ORDER.forEach(key=>{
+    const c=CHARS[key];
+    const row=document.createElement('button');
+    row.className='char-row';
+    row.dataset.key=key;
+    // 치비 이미지: 추후 삽입. img onerror 시 도트 박스 유지
+    row.innerHTML=`<span class="chibi"></span><span class="nm">${c.kr}<small>${c.han}</small></span>`;
+    row.onclick=()=>openProfile(key, row);
+    list.appendChild(row);
+  });
+}
+
+/* 가챠 카드 오프닝 → 프로필 */
+function openProfile(key, row){
+  document.querySelectorAll('.char-row').forEach(r=>r.classList.remove('sel'));
+  row.classList.add('sel');
+
+  const c=CHARS[key];
+  document.getElementById('gachaHan').textContent=c.han;
+  const g=document.getElementById('gacha');
+  g.classList.add('active');
+
+  setTimeout(()=>{
+    g.classList.remove('active');
+    renderProfile(key);
+  }, 2000);
+}
+
+function renderProfile(key){
+  const c=CHARS[key];
+  document.getElementById('charEmpty').style.display='none';
+  const box=document.getElementById('charProfile');
+  box.style.display='block';
+  box.innerHTML=`
+    <div class="profile">
+      <div class="profile-info">
+        <div class="p-han">${c.han}</div>
+        <div class="p-pron">${c.pron}</div>
+        <div class="p-meta">
+          <div class="row"><span class="k">이름</span><span class="v">${c.kr}</span></div>
+          <div class="row"><span class="k">성별</span><span class="v">${c.gender}</span></div>
+          <div class="row"><span class="k">나이</span><span class="v">${c.age}</span></div>
+          <div class="row"><span class="k">직업</span><span class="v">${c.job}</span></div>
+          <div class="row"><span class="k">정보</span><span class="v">${c.info}</span></div>
+          <div class="row"><span class="k">말투</span><span class="v">${c.tone}</span></div>
+        </div>
+        <div class="p-quote">“${c.quote}”</div>
+        <div class="p-home"><span class="home-icon"></span> 거주지 — ${c.home}</div>
+      </div>
+      <!-- 우측 스탠딩: 추후 이미지 삽입 -->
+      <div class="profile-stand"><span>${c.standDesc.replace(/\n/g,'<br>')}</span></div>
+    </div>`;
+}
+
+/* ============================================================
+   [3] 세계관 맵 — 타일 그리드 워킹 엔진
+   ============================================================ */
+const TILE = 40;             // 타일 픽셀 크기
+let grid = [];               // 2차원 문자 배열
+let px=0, py=0;              // 플레이어 타일 좌표
+let worldBuilt=false;
+let moveLock=false;
+
+function buildWorldStart(){
+  px=0; py=0;
+  if(!worldBuilt){ buildGrid(); worldBuilt=true; }
+  // 시작 위치 P 찾기
+  for(let y=0;y<grid.length;y++){
+    for(let x=0;x<grid[y].length;x++){
+      if(WORLD_MAP[y][x]==='P'){ px=x; py=y; }
+    }
+  }
+  document.getElementById('wPopup').classList.remove('show');
+  placePlayer(false);
+  updateHud();
+}
+
+function buildGrid(){
+  grid = WORLD_MAP.map(row=>row.split(''));
+  const cols = grid[0].length, rows = grid.length;
+  const gridEl=document.getElementById('worldGrid');
+  gridEl.style.setProperty('--ts', TILE+'px');
+  gridEl.style.gridTemplateColumns=`repeat(${cols},${TILE}px)`;
+  gridEl.style.gridTemplateRows=`repeat(${rows},${TILE}px)`;
+  gridEl.style.width=(cols*TILE)+'px';
+  gridEl.style.height=(rows*TILE)+'px';
+  gridEl.innerHTML='';
+
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++){
+      const ch=grid[y][x];
+      const t=document.createElement('div');
+      const isSpot=SPOT_DEF[ch];
+      const base = isSpot ? 'road' : (MAP_LEGEND[ch]||'void');
+      t.className='tile t-'+base.split(' ')[0]+(base.includes('lit')?' lit':'');
+      t.dataset.x=x; t.dataset.y=y;
+
+      if(isSpot){
+        t.classList.add('t-spot');
+        t.id='spot-'+ch;
+        t.dataset.spot=ch;
+        const pin=document.createElement('div');
+        pin.className='spot-pin';
+        // 치비 자리표시 — 추후 이미지로 교체
+        pin.innerHTML=`<div class="spot-label">${isSpot.label}</div>`+
+                      `<div class="spot-chibi"></div>`+
+                      `<div class="mark">!</div>`;
+        t.appendChild(pin);
+      }
+      gridEl.appendChild(t);
+    }
+  }
+  // 플레이어를 그리드 안에 좌표로 배치
+  placePlayer(false);
+}
+
+function placePlayer(animate){
+  const pEl=document.getElementById('wPlayer');
+  pEl.style.left=(px*TILE)+'px';
+  pEl.style.top=(py*TILE)+'px';
+  if(animate){
+    pEl.classList.remove('step'); void pEl.offsetWidth; pEl.classList.add('step');
+  }
+  centerCamera();
+  highlightNearSpots();
+}
+
+// 카메라: 플레이어가 항상 화면 중앙에 오도록 cam 이동
+function centerCamera(){
+  const cam=document.getElementById('worldCam');
+  const cx=px*TILE + TILE/2;
+  const cy=py*TILE + TILE/2;
+  cam.style.transform=`translate(${-cx}px, ${-cy}px)`;
+}
+
+// 인접 장소 핀에 느낌표 표시
+function highlightNearSpots(){
+  document.querySelectorAll('.t-spot').forEach(t=>{
+    const sx=+t.dataset.x, sy=+t.dataset.y;
+    const near=Math.abs(sx-px)+Math.abs(sy-py)<=1;
+    t.classList.toggle('near', near);
+  });
+}
+
+// dx,dy 방향으로 한 칸 이동
+function movePlayer(dx,dy){
+  if(moveLock) return;
+  const nx=px+dx, ny=py+dy;
+  if(ny<0||ny>=grid.length||nx<0||nx>=grid[0].length) return;
+  const ch=WORLD_MAP[ny][nx];
+  if(!WALKABLE.has(ch)) return;   // 벽이면 막힘
+
+  moveLock=true;
+  px=nx; py=ny;
+  placePlayer(true);
+  setTimeout(()=>{moveLock=false;}, 150);
+
+  // 장소 핀 위에 올라서면 팝업
+  const spot=SPOT_DEF[ch];
+  if(spot){ openZone(spot.zone); }
+  else { closeWorldPopup(); }
+  updateHud();
+}
+
+function currentZoneByPos(){
+  // 사거리 중심 기준 사분면으로 현재 구역 추정(HUD용)
+  const cx=Math.floor(grid[0].length/2), cy=Math.floor(grid.length/2);
+  if(Math.abs(px-cx)<=1 && Math.abs(py-cy)<=1) return null;
+  if(py<cy && Math.abs(py-cy)>=Math.abs(px-cx)) return 'n';
+  if(py>cy && Math.abs(py-cy)>=Math.abs(px-cx)) return 's';
+  if(px<cx) return 'w';
+  return 'e';
+}
+function updateHud(){
+  const z=currentZoneByPos();
+  document.getElementById('worldHud').textContent =
+    z ? ZONES[z].title : '侵爭 · 사거리 중앙';
+}
+
+function openZone(zoneKey){
+  const z=ZONES[zoneKey];
+  document.getElementById('wTitle').textContent=z.title;
+  document.getElementById('wDesc').textContent=z.desc;
+  const sp=document.getElementById('wSpots');
+  sp.innerHTML='';
+  z.spots.forEach(s=>{ const e=document.createElement('span'); e.className='spot'; e.textContent=s; sp.appendChild(e); });
+  document.getElementById('wPopup').classList.add('show');
+}
+function closeWorldPopup(){
+  document.getElementById('wPopup').classList.remove('show');
+}
+
+// 키보드(PC) 지원
+document.addEventListener('keydown', e=>{
+  if(!document.getElementById('codex').classList.contains('active')) return;
+  if(!document.getElementById('pane-world').classList.contains('active')) return;
+  const map={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],
+             w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};
+  const m=map[e.key];
+  if(m){ e.preventDefault(); movePlayer(m[0],m[1]); }
+});
+
+/* ============================================================
+   플로팅 뮤직 플레이어
+   ============================================================ */
+function toggleMusicPanel(){
+  document.getElementById('mmPanel').classList.toggle('show');
+}
+function musicPlayPause(){
+  const orb=document.getElementById('mmOrb');
+  const btn=document.getElementById('mmPlayBtn');
+  if(bgm.paused){ bgm.play(); orb.classList.remove('paused'); btn.textContent='∥'; }
+  else{ bgm.pause(); orb.classList.add('paused'); btn.textContent='▶'; }
+}
+function musicRestart(){
+  bgm.currentTime=0; bgm.play();
+  document.getElementById('mmOrb').classList.remove('paused');
+  document.getElementById('mmPlayBtn').textContent='∥';
+}
+// 진행바
+bgm.addEventListener('timeupdate', ()=>{
+  if(bgm.duration){
+    document.getElementById('mmBar').style.width=(bgm.currentTime/bgm.duration*100)+'%';
+  }
+});
+</script>
+</body>
+</html>
