@@ -404,13 +404,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .char-row.sel{border-left-color:var(--blood-bright);background:rgba(48,18,16,.7);}
 /* 픽셀 치비(추후 이미지 삽입) — 자리표시 박스 */
 .chibi{
-  width:34px;height:34px;flex-shrink:0;background:var(--ash-2);
-  border:1px solid var(--rust);image-rendering:pixelated;
-  /* 삽입 전 도트 패턴 */
-  background-image:
-    linear-gradient(45deg,var(--rust) 25%,transparent 25%),
-    linear-gradient(-45deg,var(--rust) 25%,transparent 25%);
-  background-size:8px 8px;
+  width:38px;height:38px;flex-shrink:0;image-rendering:pixelated;
+  background:transparent;border:none;
 }
 .char-row .nm{font-family:var(--font-pixel);font-size:12px;color:var(--bone);line-height:1.4;}
 .char-row .nm small{display:block;color:var(--bone-dim);font-size:10px;}
@@ -465,11 +460,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .home-icon{width:28px;height:28px;background:var(--ash-2);border:1px solid var(--neon-dim);image-rendering:pixelated;
   background-image:linear-gradient(45deg,var(--neon-dim) 25%,transparent 25%);background-size:7px 7px;}
 /* 프로필 우측 스탠딩(추후 이미지 삽입) — 자리표시 */
-.profile-stand{width:34%;max-width:150px;flex-shrink:0;align-self:stretch;
-  background:linear-gradient(to top,rgba(139,0,0,.15),transparent);
-  border:1px dashed var(--rust);min-height:240px;position:relative;}
-.profile-stand span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-pixel);font-size:10px;color:var(--bone-dim);text-align:center;padding:8px;}
+.profile-stand-fixed{
+  position:sticky;top:0;float:right;
+  width:46%;max-width:220px;height:0;overflow:visible;
+  z-index:0;pointer-events:none;margin-left:8px;
+}
+.profile-stand-fixed img{
+  display:block;width:100%;height:auto;
+  object-fit:contain;image-rendering:auto;
+  opacity:.88;
+  filter:drop-shadow(0 0 14px rgba(139,0,0,.35));
+}
+.profile-stand-fixed.noimg{height:auto;}
+.profile-stand-fixed span{display:block;width:100%;
+  font-family:var(--font-pixel);font-size:10px;color:var(--bone-dim);text-align:center;
+  border:1px dashed var(--rust);padding:40px 8px;
+  background:linear-gradient(to top,rgba(139,0,0,.15),transparent);}
+.profile{position:relative;z-index:1;display:block;animation:loreFade .5s ease;}
+.profile-info{position:relative;z-index:1;}
 
 /* ---------- 세계관 탭 (진짜 타일 그리드 쯔꾸르) ---------- */
 #pane-world{flex-direction:column;}
@@ -524,23 +532,25 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .t-void{background:#070403;}
 
 /* 장소 핀(밟으면 발동) — 캐릭터 치비가 설 자리(추후 이미지 삽입) */
-.t-spot{cursor:default;}
-.spot-pin{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;z-index:3;}
-/* 치비 자리표시 박스 — 추후 이미지로 교체 */
-.spot-chibi{width:80%;height:80%;align-self:center;
-  background-image:linear-gradient(45deg,var(--rust) 25%,transparent 25%),
-    linear-gradient(-45deg,var(--rust) 25%,transparent 25%);
-  background-size:6px 6px;background-color:rgba(20,12,10,.7);
-  border:1px solid var(--neon-dim);image-rendering:pixelated;
-  animation:pinBob 1.6s ease-in-out infinite;}
-@keyframes pinBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.t-spot{cursor:default;overflow:visible;z-index:4;}
+.spot-pin{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:visible;}
+.spot-house{position:absolute;left:50%;bottom:18%;transform:translateX(-50%);
+  width:200%;height:200%;z-index:1;image-rendering:pixelated;
+  background-size:contain;background-repeat:no-repeat;background-position:bottom center;
+  pointer-events:none;}
+.spot-house.small{width:120%;height:120%;bottom:24%;}
+.spot-chibi{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);
+  width:66%;height:66%;z-index:2;image-rendering:pixelated;
+  background-size:contain;background-repeat:no-repeat;background-position:bottom center;
+  background-color:transparent;border:none;
+  animation:pinBob 1.6s ease-in-out infinite;pointer-events:none;}
+@keyframes pinBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
 .spot-label{position:absolute;top:-14px;left:50%;transform:translateX(-50%);
   font-family:var(--font-pixel);font-size:8px;white-space:nowrap;color:var(--neon);
-  background:rgba(8,4,3,.85);padding:1px 4px;border:1px solid var(--neon-dim);z-index:4;}
-/* 가까이 가면 핀 위 느낌표 */
+  background:rgba(8,4,3,.85);padding:1px 4px;border:1px solid var(--neon-dim);z-index:5;}
 .spot-pin .mark{position:absolute;top:-20px;left:50%;transform:translateX(-50%);
   font-family:var(--font-pixel);font-size:12px;color:var(--blood-bright);opacity:0;
-  text-shadow:0 0 8px var(--blood-bright);}
+  text-shadow:0 0 8px var(--blood-bright);z-index:6;}
 .t-spot.near .spot-pin .mark{opacity:1;animation:nextBlink 1s steps(2) infinite;}
 
 /* 플레이어 스프라이트 — 한 칸 차지, 카메라 중앙 고정 */
@@ -929,7 +939,8 @@ const CHAR_ORDER = ["meat","mech","doctor","house","police","cleaner"];
 const IMG_BASE = "https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/";
 // 스탠딩 이미지 전체 URL 헬퍼
 function standUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+c.stand+".png" : ""; }
- 
+ // 치비 이미지 URL 헬퍼 (스탠딩 파일명 앞에 'mini')
+function chibiUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+"mini"+c.stand+".png" : ""; }
 
 // 게임 체험 선택지(장소 → 캐릭터)
 const PLACES = [
@@ -983,18 +994,18 @@ const DIALOGUES = {
 
 // 게임 종료 후 세계관 인트로 4문장
 const LORE_INTRO = [
-  "이곳에 법은 도착하지 않는다. 도착한 적도 없다.",
-  "여섯 개의 문이 있고, 너는 그 전부를 두드렸다.",
+  "구룡성채 Season 2, 화려한 복귀의 무법지대. 그리고 이제부터는, 너의 집!",
+  "여섯 개의 문 전부를 두드린 너는 살아남을 수 있을까?",
   "붉음은 발밑에서 마르지 않고, 이름들은 골목마다 고여 있다.",
   "侵爭 ― 침쟁구역. 이제, 그 안으로 들어선다."
 ];
 
 // 세계관 맵 구역 데이터
 const ZONES = {
-  n:{title:"北 · 어스름 (북쪽 구역)", desc:"폭이 좁고 어두운 골목. 청소의 청소도구들만 어지럽게 널브러져 있다. 사람보다 정적이 먼저 산다.", spots:["청소의 자리"]},
-  w:{title:"西 · 폐허 (서쪽 구역)", desc:"버려진 창고와 무너진 건물이 이어진다. 그 깊은 곳에 장려선의 의사 벙커가 숨어 있다.", spots:["장려선 · 의사 벙커"]},
-  e:{title:"東 · 철골 (동쪽 구역)", desc:"높은 철골 건물과 오래된 아파트가 층층이 겹친다. 임희동의 하우스와 장해림의 파출소가 마주 본다.", spots:["임희동 · 하우스","장해림 · 파출소"]},
-  s:{title:"南 · 상점가 (남쪽 구역)", desc:"좁은 주택가와 상점이 뒤섞인 거리. 이국겸의 정육점과 구건명의 정비소가 나란히 불을 켠다.", spots:["이국겸 · 정육점","구건명 · 정비소"]}
+  n:{title:"北 · 어스름 (북쪽 구역)", desc:"폭이 좁고 어두운 골목. 락스 같은 냄새와 청소도구들만 어지럽게 널브러져 있다.", spots:["청소의 자리"]},
+  w:{title:"西 · 폐허 (서쪽 구역)", desc:"버려진 창고와 무너진 건물이 이어진다. 그 깊은 곳에 보호색 띤 쪽방들이 숨어 있다.", spots:["장려선 · 의사 벙커"]},
+  e:{title:"東 · 철골 (동쪽 구역)", desc:"높은 철골 건물과 오래된 아파트가 층층이 겹친 구조.", spots:["임희동 · 하우스","장해림 · 파출소"]},
+  s:{title:"南 · 상점가 (남쪽 구역)", desc:"좁은 주택가와 상점이 뒤섞인 거리. 나름 침쟁구역 안에서는 제일 살 만한 동네.", spots:["이국겸 · 정육점","구건명 · 정비소"]}
 };
 
 /* ============================================================
@@ -1015,15 +1026,14 @@ const WALKABLE = new Set(['.', ',', 'P', '1','2','3','4','5','6']);
 
 // 핀 번호 → 구역키 + 라벨 (캐릭터 치비가 설 자리)
 const SPOT_DEF = {
-  '1':{zone:'n', label:'어스름'},        // 北 청소
-  '2':{zone:'w', label:'의사 벙커'},      // 西 장려선
-  '3':{zone:'e', label:'하우스'},        // 東 임희동
-  '4':{zone:'e', label:'파출소'},        // 東 장해림
-  '5':{zone:'s', label:'정육점'},        // 南 이국겸
-  '6':{zone:'s', label:'정비소'}         // 南 구건명
+  '1':{zone:'n', label:'어스름',   char:'cleaner', houseImg:'house_cleaner'},
+  '2':{zone:'w', label:'의사 벙커', char:'doctor',  houseImg:'house_doctor'},
+  '3':{zone:'e', label:'하우스',   char:'house',   houseImg:'house_house'},
+  '4':{zone:'e', label:'파출소',   char:'police',  houseImg:'house_police'},
+  '5':{zone:'s', label:'정육점',   char:'meat',    houseImg:'house_meat'},
+  '6':{zone:'s', label:'정비소',   char:'mech',    houseImg:'house_mech'}
 };
 
-// 17열 x 17행. 가독성을 위해 문자열 행으로.
 const WORLD_MAP = [
   "RRRRRRRSWS RRRRRR",
   "R##W#W#.#W#W##W#R",
@@ -1252,7 +1262,9 @@ function buildCharList(){
     row.className='char-row';
     row.dataset.key=key;
     // 치비 이미지: 추후 삽입. img onerror 시 도트 박스 유지
-    row.innerHTML=`<span class="chibi"></span><span class="nm">${c.kr}<small>${c.han}</small></span>`;
+    const cb=chibiUrl(key);
+    const cbStyle = cb ? ` style="background-image:url('${cb}');background-size:contain;background-repeat:no-repeat;background-position:center;"` : '';
+    row.innerHTML=`<span class="chibi"${cbStyle}></span><span class="nm">${c.kr}<small>${c.han}</small></span>`;
     row.onclick=()=>openProfile(key, row);
     list.appendChild(row);
   });
@@ -1279,7 +1291,14 @@ function renderProfile(key){
   document.getElementById('charEmpty').style.display='none';
   const box=document.getElementById('charProfile');
   box.style.display='block';
+  const url=standUrl(key);
   box.innerHTML=`
+    <div class="profile-stand-fixed">${
+      url
+        ? `<img src="${url}" alt="${c.kr} 스탠딩"
+             onerror="this.parentNode.classList.add('noimg');this.parentNode.innerHTML='<span>${c.standDesc.replace(/\n/g,'<br>')}</span>';">`
+        : `<span>${c.standDesc.replace(/\n/g,'<br>')}</span>`
+    }</div>
     <div class="profile">
       <div class="profile-info">
         <div class="p-han">${c.han}</div>
@@ -1295,14 +1314,6 @@ function renderProfile(key){
         <div class="p-quote">“${c.quote}”</div>
         <div class="p-home"><span class="home-icon"></span> 거주지 — ${c.home}</div>
       </div>
-      <!-- 우측 스탠딩: 추후 이미지 삽입 -->
-      <!-- 우측 스탠딩: 파일명이 있으면 이미지, 없으면 자리표시 텍스트 -->
-      <div class="profile-stand">${
-        standUrl(key)
-          ? `<img src="${standUrl(key)}" alt="${c.kr} 스탠딩" style="width:100%;height:100%;object-fit:contain;object-position:bottom center;"
-               onerror="this.style.display='none';this.parentNode.innerHTML='<span>${c.standDesc.replace(/\n/g,'<br>')}</span>';">`
-          : `<span>${c.standDesc.replace(/\n/g,'<br>')}</span>`
-      }</div>
     </div>`;
 }
 
@@ -1353,11 +1364,16 @@ function buildGrid(){
         t.classList.add('t-spot');
         t.id='spot-'+ch;
         t.dataset.spot=ch;
-        const pin=document.createElement('div');
+       const pin=document.createElement('div');
         pin.className='spot-pin';
-        // 치비 자리표시 — 추후 이미지로 교체
+        const pinCb=isSpot.char ? chibiUrl(isSpot.char) : '';
+        const cbStyle = pinCb ? ` style="background-image:url('${pinCb}');"` : '';
+        const hImg = isSpot.houseImg ? IMG_BASE+isSpot.houseImg+".png" : '';
+        const hStyle = hImg ? ` style="background-image:url('${hImg}');"` : '';
+        const hSmall = (isSpot.char==='cleaner') ? ' small' : '';
         pin.innerHTML=`<div class="spot-label">${isSpot.label}</div>`+
-                      `<div class="spot-chibi"></div>`+
+                      `<div class="spot-house${hSmall}"${hStyle}></div>`+
+                      `<div class="spot-chibi"${cbStyle}></div>`+
                       `<div class="mark">!</div>`;
         t.appendChild(pin);
       }
