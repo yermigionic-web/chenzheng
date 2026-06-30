@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>侵爭 · 침쟁구역</title>
+<title>侵爭</title>
 
 <!-- ===================== 외부 폰트 ===================== -->
 <!-- Noto Serif HK : 광둥어(번체 한자) 디스플레이 / Black Han Sans : 한글 그런지 헤드라인 -->
@@ -189,9 +189,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 /* 길거리 배경(추후 이미지 삽입) — 임시 CSS 골목 */
 .street-bg{
   position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(70% 50% at 50% 18%, rgba(57,255,20,.08), transparent 60%),
-    linear-gradient(180deg,#120a08 0%, #1d100d 55%, #0a0504 100%);
+  background-image:url("https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/czbackground.png");
+  background-size:cover;
+  background-position:center;
 }
 .street-bg::after{
   /* 원근 바닥 격자(핏빛) */
@@ -206,18 +206,33 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   position:absolute;right:2vw;bottom:0;z-index:5;width:38vw;max-width:230px;height:32vh;
   pointer-events:none;
   /* 이미지 삽입 전 임시 실루엣 */
-  background:linear-gradient(to top, rgba(40,20,18,.9), transparent);
-  -webkit-mask:radial-gradient(60% 80% at 70% 100%, #000 40%, transparent 70%);
-          mask:radial-gradient(60% 80% at 70% 100%, #000 40%, transparent 70%);
+  background-image:url("https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/czuserhand.png");
+  background-size:contain;
+  background-repeat:no-repeat;
 }
 /* 걷는 듯한 상하 흔들림 (선택 시 토글) */
-.walking{animation:walkBob .55s ease-in-out;}
+/* 걷는 듯한 상하 흔들림 — playInner와 손에 함께 적용, 3번 반복 */
+.walking{animation:walkBob .5s ease-in-out 3;}
+.hand-walking{animation:walkBobHand .5s ease-in-out 3;}
 @keyframes walkBob{
   0%{transform:translateY(0) rotate(0)}
   25%{transform:translateY(-14px) rotate(-.4deg)}
   50%{transform:translateY(4px) rotate(.3deg)}
   75%{transform:translateY(-8px) rotate(-.2deg)}
   100%{transform:translateY(0) rotate(0)}
+}
+@keyframes walkBobHand{
+  0%{transform:translateY(0) translateX(0) rotate(0)}
+  25%{transform:translateY(10px) translateX(-6px) rotate(1.2deg)}
+  50%{transform:translateY(-4px) translateX(4px) rotate(-.8deg)}
+  75%{transform:translateY(8px) translateX(-3px) rotate(.6deg)}
+  100%{transform:translateY(0) translateX(0) rotate(0)}
+}
+.street-walk{animation:streetWalk 1.5s ease-in forwards;transform-origin:60% 70%;}
+@keyframes streetWalk{
+  0%{transform:scale(1);filter:brightness(1)}
+  70%{transform:scale(1.18);filter:brightness(.7)}
+  100%{transform:scale(1.32);filter:brightness(0);opacity:0}
 }
 
 .play-inner{position:relative;z-index:6;width:100%;height:100%;display:flex;flex-direction:column;}
@@ -265,13 +280,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .dlg-bg{position:absolute;inset:0;z-index:0;transition:background .4s;}
 /* 우측 캐릭터 스탠딩(추후 이미지 삽입) — 자리표시 */
 .standing{
-  position:absolute;right:0;bottom:0;z-index:1;width:60vw;max-width:360px;height:80vh;
+  position:absolute;right:0;bottom:0;z-index:1;
+  width:80vw;max-width:560px;height:102vh;
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:bottom right;
   pointer-events:none;
-  /* 삽입 전 임시 실루엣 박스 */
-  background:linear-gradient(to top, rgba(0,0,0,.5), transparent 60%);
-  -webkit-mask:linear-gradient(to top,#000 60%,transparent);
-          mask:linear-gradient(to top,#000 60%,transparent);
-  animation:standIn .5s ease;
 }
 @keyframes standIn{0%{transform:translateX(40px);opacity:0}100%{transform:translateX(0);opacity:1}}
 .standing-tag{
@@ -629,9 +643,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .mm-controls button:active{background:var(--rust);}
 .mm-bar{flex:1;height:4px;background:var(--ash-2);position:relative;overflow:hidden;}
 .mm-bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--neon);box-shadow:0 0 8px var(--neon);}
-.mm-lyrics{max-height:130px;overflow-y:auto;font-size:12px;line-height:1.9;color:var(--bone-dim);
-  border-top:1px dashed var(--rust);padding-top:10px;}
-.mm-lyrics b{color:var(--bone);}
+.mm-lyrics{max-height:130px;overflow-y:auto;font-size:12px;line-height:2.0;color:var(--bone-dim);
+  border-top:1px dashed var(--rust);padding-top:10px;letter-spacing:.02em;}
+.mm-lyrics b{color:#e0837d;font-weight:700;text-shadow:0 0 6px rgba(192,20,20,.35);}
 
 /* ===================== 스크롤바 ===================== */
 ::-webkit-scrollbar{width:6px;}
@@ -672,9 +686,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <img class="logo" src="https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/xjlogo.png"
          alt="侵爭" onerror="this.style.display='none';document.getElementById('logoFb').style.display='block';">
     <div id="logoFb" class="logo-fallback" style="display:none;">侵爭</div>
-    <div class="logo-sub">CHIMJAENG ZONE</div>
+    <div class="logo-sub">인 권 침 해 구 역</div>
   </div>
-  <button class="start-btn" onclick="startGame()">▶ TOUCH TO START</button>
+  <button class="start-btn" onclick="startGame()">▶ 入場</button>
 </section>
 
 <!-- ============================================================
@@ -709,7 +723,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div id="lore-intro" onclick="nextLore()">
     <div>
       <div class="lore-card" id="loreCard"></div>
-      <div class="lore-tap">TAP TO CONTINUE</div>
+      <div class="lore-tap">Touch to Continue</div>
     </div>
   </div>
 </section>
@@ -735,7 +749,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <div class="codex-pane active" id="pane-char">
       <div class="char-list" id="charList"></div>
       <div class="char-detail">
-        <div class="char-empty" id="charEmpty">좌측에서 인물을 선택하면<br>프로필이 열립니다.<br><br>侵爭 — 침쟁구역의 여섯</div>
+        <div class="char-empty" id="charEmpty">좌측에서 주민을 선택하면<br>프로필 열람 가능<br><br>侵爭</div>
         <div id="charProfile" style="display:none;"></div>
       </div>
       <!-- 가챠 오프닝 연출 -->
@@ -792,22 +806,66 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div class="mm-orb" id="mmOrb" onclick="toggleMusicPanel()">♪</div>
 </div>
 <div class="mm-panel" id="mmPanel">
-  <div class="mm-title">名 不詳 · Lorem</div>
-  <div class="mm-artist">侵爭 ORIGINAL SOUNDTRACK</div>
+  <div class="mm-title">No Passenger's Sky</div>
+  <div class="mm-artist">ORIGINAL SOUNDTRACK</div>
   <div class="mm-controls">
     <button onclick="musicPlayPause()" id="mmPlayBtn">∥</button>
     <button onclick="musicRestart()">↺</button>
     <div class="mm-bar"><i id="mmBar"></i></div>
   </div>
-  <div class="mm-lyrics" id="mmLyrics">
-    <!-- 가사: 창작곡 — 추후 직접 삽입 예정 -->
-    <b>[가사 삽입 영역]</b><br>
-    Lorem ipsum dolor sit amet,<br>
-    consectetur adipiscing elit, sed do<br>
-    eiusmod tempor incididunt ut labore.<br>
-    Ut enim ad minim veniam, quis nostrud<br>
-    exercitation ullamco laboris nisi.<br>
-    <span style="color:var(--neon-dim)">— 추후 실제 가사로 교체하세요 —</span>
+<div class="mm-lyrics" id="mmLyrics">
+    <!-- 테마곡 가사 (광둥어 원문 + 한국어 번역 교차) -->
+    <span class="yue"><b>我朝早醒，數一數仲喺度嘅人。</b></span><br>
+    아침에 깨면 아직 여기 남은 얼굴을 세<br>
+    <span class="yue"><b>水滴落鐵，當作鐘聲。</b></span><br>
+    쇠 위에 떨어진 빗방울이 우리의 종소리<br>
+    <span class="yue"><b>冇人問我叫乜名。</b></span><br>
+    아무도 내 이름을 묻지 않네<br>
+    <span class="yue"><b>喺度，名係多餘嘅嘢。</b></span><br>
+    이곳에서 이름 같은 건 군더더기이므로<br>
+    <br>
+    <span class="yue"><b>天好遠，遠到睇唔到顏色。</b></span><br>
+    하늘은 멀어, 색을 잃을 만큼 멀어서<br>
+    <span class="yue"><b>我哋低住頭，學識喺暗度行。</b></span><br>
+    우린 고개를 떨군 채, 어둠 속 걷는 법을 배워<br>
+    <br>
+    <span class="yue"><b>霧入骨，骨入城。</b></span><br>
+    안개가 뼈에 박혀, 뼈가 도시에 박히고<br>
+    <span class="yue"><b>邊個喺度，邊個唔見咗。</b></span><br>
+    누가 남았나 누가 지워졌나<br>
+    <span class="yue"><b>唞唔到氣，但係未死得。</b></span><br>
+    숨이 막히고, 그래도 아직 안 죽었어<br>
+    <span class="yue"><b>我哋喺度，沉落去。</b></span><br>
+    우린 이곳에서 가라앉네<br>
+    <br>
+    <span class="yue"><b>隔籬嘅燈，琴晚熄咗。</b></span><br>
+    옆집 불빛이 어젯밤 꺼졌어<br>
+    <span class="yue"><b>冇人講起，當佢未住過。</b></span><br>
+    아무도 말하지 않네 숨소리도 없던 것처럼<br>
+    <span class="yue"><b>我倒杯茶，飲落去仲係凍。</b></span><br>
+    차를 한 잔 따라 삼켜도 여전히 차가워<br>
+    <span class="yue"><b>喺呢度，暖嘅嘢都借嚟。</b></span><br>
+    이곳의 온기는 전부 빌려온 것<br>
+    <br>
+    <span class="yue"><b>如果有日我都唔見咗。</b></span><br>
+    언젠가 나마저 지워진대도<br>
+    <span class="yue"><b>唔使搵，唔使記。</b></span><br>
+    찾지 마, 기억도 하지 말아 줘<br>
+    <span class="yue"><b>有人會喺我企過嘅位。</b></span><br>
+    내가 있던 자리엔 누군가<br>
+    <span class="yue"><b>企返低。</b></span><br>
+    다시 서겠지<br>
+    <br>
+    <span class="yue"><b>霧入骨，骨入城。</b></span><br>
+    안개가 뼈에 박혀, 뼈가 도시에 박히고<br>
+    <span class="yue"><b>邊個喺度，邊個唔見咗。</b></span><br>
+    누가 남았나 누가 지워졌나<br>
+    <span class="yue"><b>唞唔到氣，但係未死得。</b></span><br>
+    숨이 막히네, 그래도 아직 안 죽었어<br>
+    <span class="yue"><b>我哋喺度，沉落去。</b></span><br>
+    우린 이곳에서 가라앉네<br>
+    <span class="yue"><b>沉落去。</b></span><br>
+    가라앉네
   </div>
 </div>
 
@@ -820,52 +878,58 @@ const CHARS = {
     han:"黎國謙", kr:"이국겸", pron:"라이구컴 · Lai Gwok-im",
     gender:"여성", age:"35세", job:"정육점 주인",
     info:"인륜이라는 단어를 버린 손으로, 자기만의 룰만은 결벽적으로 지킨다. 뒤탈은 남기지 않는다. 일은 일.",
-    tone:"과묵한 싸늘한 반말. 보호욕을 츤데레로 감춘다.",
-    quote:"…원수였든 아니든, 그딴 건 묻지 않아. 다만 오늘 밤 네 손은 깨끗해질 거야. 그게 내 일이고.",
-    home:"南 · 정육점", color:"#3a0c0c", standDesc:"이국겸 스탠딩\n(추후 삽입)"
+    tone:"과묵한 반말조. 은근히 츤데레같은 면모가 있을지도.",
+    quote:"…이유가 있었든 아니든, 그딴 건 묻지 않아. 다만 네 손은 깨끗해질 기미가 없어 보인다.",
+   home:"南 · 정육점", color:"#3a0c0c", stand:"gukgyeom", standDesc:"이국겸 스탠딩\n(이미지 없음)"
   },
   mech:{
     han:"邱建明", kr:"구건명", pron:"야우컨밍 · Yau Kin Ming",
     gender:"여성", age:"29세", job:"기계 정비공",
-    info:"속을 알 수 없는 나른함. 그러나 자신이 그은 선 — 자기 삶과 직업 — 은 절대 넘지 않는다.",
-    tone:"존댓말과 반말이 뒤섞인 능청. 멘탈은 단단하다.",
-    quote:"죽었다고요? 안됐네. 근데 남겨진 것들은 누가 챙겨요. 그것까진 생각 안 했죠, 다들.",
-    home:"南 · 정비소", color:"#0c2a1a", standDesc:"구건명 스탠딩\n(추후 삽입)"
+    info:"속을 알 수 없는 나른함. 그러나 자기 삶과 직업, 그리고 고양이들은 절대 놓지 않는다.",
+    tone:"존댓말과 반말이 뒤섞인 능청함. 은근히 블랙 유머적인 톤.",
+    quote:"죽었다고요? 안됐네. 걔네 집 금붕어들은 누가 챙겨요. 그것까진 생각 안 하죠, 다들?",
+    home:"南 · 정비소", color:"#0c2a1a", stand:"gunmyeong", standDesc:"구건명 스탠딩\n(이미지 없음)"
   },
   doctor:{
     han:"張麗善", kr:"장려선", pron:"청라이신 · Cheung Lai Sin",
     gender:"여성", age:"28세", job:"불법 의사",
-    info:"헌신적으로 치료하지만, 치료는 그녀의 자기만족이기도 하다. 낫게 하면서, 낫지 않기를 바란다.",
-    tone:"느리고 곱씹는 존댓말. '요'를 늘이며 오래 말한다.",
-    quote:"아―파요? 선생님. 제가요, 봐 드릴게요. 제 벙커로요. 같―이, 가―요.",
-    home:"西 · 의사 벙커", color:"#241f2a", standDesc:"장려선 스탠딩\n(추후 삽입)"
+    info:"헌신적으로 치료하지만, 치료는 려선의 자기만족이기도 하다. 낫게 하면서, 낫지 않기를 바라면 모순?",
+    tone:"느리고 곱씹는 존댓말. 확신이 없어 오랫동안 말한다.",
+    quote:"아―파요? 선생님. 제가요, 봐 드릴게요. 제 벙커로 같이 가요, 얼른요.",
+    home:"西 · 의사 벙커", color:"#241f2a", stand:"ryuseon", standDesc:"장려선 스탠딩\n(이미지 없음)"
   },
   house:{
     han:"林希彤", kr:"임희동", pron:"람헤이텅 · Lam Hei Tung",
     gender:"여성", age:"38세", job:"타짜",
-    info:"대부분에 무심하지만, 흥미로운 대상만은 집요하게 공부한다. 전공은 하이로우.",
-    tone:"성숙한 반존대. 포커페이스를 깨지 않는다.",
-    quote:"그 카드는 뒤집지 마세요, 아가씨. 더러운 건… 들키기 전까지만 패가 되거든요.",
-    home:"東 · 하우스(도박판)", color:"#2a230c", standDesc:"임희동 스탠딩\n(추후 삽입)"
+    info:"대부분에 무심하고 어른스러운 태도를 유지한다. 전공은 서양화, 특히 하이로우.",
+    tone:"성숙한 반존대. 포커페이스를 깨지 않는 면모.",
+    quote:"그 카드는 뒤집지 마세요, 아가씨. 더러운 건… 들키기 전까지만 패가 되거든.",
+    home:"東 · 하우스(도박판)", color:"#2a230c", stand:"heidong", standDesc:"임희동 스탠딩\n(이미지 없음)"
   },
   police:{
     han:"张海霖", kr:"장해림", pron:"청호이람 · Cheung Hoi Lam",
     gender:"여성", age:"41세", job:"부패 경찰",
-    info:"모든 걸 포기한 천하태평. 그러나 한때 진짜 관리관이었던 실력의 흔적이 가끔 새어나온다.",
-    tone:"나른하고 능글맞은 친근한 반말. 한 걸음 떨어져 구경한다.",
-    quote:"사람을 죽였어? 아하. 그것참 큰일이네 ― 라고, 여기 침쟁구역에선 아무도 안 적어주거든.",
-    home:"東 · 파출소", color:"#2a1a0c", standDesc:"장해림 스탠딩\n(추후 삽입)"
+    info:"모든 걸 포기한 천하태평. 가끔은 한때 진짜 관리관이었던 실력의 흔적이 드러나기도.",
+    tone:"나른하고 친근한 반말. 한 걸음 떨어져 구경하는 태도.",
+    quote:"사람을 죽였어? 아하. 그것참 큰일이네. 글쎄, 장부에 적을 만한 일인가? 그게.",
+    home:"東 · 파출소", color:"#2a1a0c", stand:"haerim", standDesc:"장해림 스탠딩\n(이미지 없음)"
   },
   cleaner:{
     han:"清巢", kr:"청소", pron:"칭 차우 · Ching Chau",
     gender:"여성", age:"23세", job:"청소부",
-    info:"광기와 순종이 예측 불가하게 섞인다. 다음 행동을 읽을 수 없는 긴장이 곧 이 사람의 축이다.",
-    tone:"경박하고 괴이한 존댓말. 가끔 한 단어를 띄어쓰기 없이 강박적으로 반복한다.",
-    quote:"닦을게요닦을게요. 바닥이 빨개도요, 비가 와도요, 우산은요… 아, 까먹었다. 닦을게요.",
-    home:"北 · 어스름", color:"#0c2226", standDesc:"청소 스탠딩\n(추후 삽입)"
+    info:"광기와 순응이 예측 불가하게 섞인 태도. 다음 행동을 읽을 수 없는 긴장감이 있지만, 만두만은 좋아한다.",
+    tone:"경박한 존댓말. 가끔 한 단어의 어감에 꽂히면 강박적으로 반복한다.",
+    quote:"닦을게요닦을게요닦을게요. 바닥이 빨개도, 비가 와도, 아, 우산 까먹었다. 닦을게요닦을게요닦을게요.",
+    home:"北 · 어스름", color:"#0c2226", stand:"chingchau", standDesc:"청소 스탠딩\n(이미지 없음)"
   }
 };
 const CHAR_ORDER = ["meat","mech","doctor","house","police","cleaner"];
+
+// 캐릭터 이미지 공통 베이스 (로고/BGM과 같은 저장소)
+const IMG_BASE = "https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/";
+// 스탠딩 이미지 전체 URL 헬퍼
+function standUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+c.stand+".png" : ""; }
+ 
 
 // 게임 체험 선택지(장소 → 캐릭터)
 const PLACES = [
@@ -882,38 +946,38 @@ const DIALOGUES = {
   meat:[
     {t:"<em>*중식도가 도마를 한 번 내려친다. 국겸은 고개를 들지 않는다.*</em>"},
     {t:"신선하네. 들어와. 문은 닫고."},
-    {t:"<em>*그녀가 손등으로 이마의 피를 훔친다.*</em> 묻지 마. 누구였는지, 왜였는지. 나한텐 다 같은 무게야."},
-    {t:"네 손, 떨고 있잖아. …앉아. 따뜻한 거라도 줄 테니까. 그 다음은, 내가 알아서 할게."}
+    {t:"<em>*그녀가 손등으로 이마의 피를 훔친다.*</em> 안 물어봐. 누구였는지, 왜였는지. 안 궁금해."},
+    {t:"겁대가리가 없지. …앉아. 따뜻한 거라도 줄 테니까. 그 다음은, 내가 알아서 할게."}
   ],
   mech:[
     {t:"<em>*몽키스패너가 철판 위에서 가볍게 굴러간다. 휘파람 소리.*</em>"},
     {t:"어서 와요. 손님은 오랜만이네. 그것도, 이런 시간에."},
-    {t:"<em>*건명이 기름 묻은 장갑을 천천히 벗는다.*</em> 고장 난 거 가져왔어요? 사람이든 기계든, 고친 적은 많은데."},
-    {t:"농담이고. …앉아서 좀 쉬어요. 여긴 아무도 안 찾아오니까. 그게 이 동네 유일한 장점이거든."}
+    {t:"<em>*건명이 기름 묻은 장갑을 천천히 벗는다.*</em> 고장 난 거 가져왔어요? 사람이든 기계든, 일 들어오면 환영이지."},
+    {t:"농담이고. …앉아서 좀 쉬어요. 여긴 아무도 안 찾아오니까."}
   ],
   doctor:[
     {t:"<em>*어둠 속에서 주사기 케이스가 짤그랑거린다.*</em>"},
-    {t:"…선생님. 오셨네―요. 기다렸―어요. 정말로요."},
-    {t:"<em>*려선이 쪼그린 채 고개만 들어 올린다.*</em> 어디가요. 아픈 데가요. 말해 주―세요. 제가요, 다 알거든요. 이 몸의요."},
-    {t:"낫게 해 드릴―게요. 천천―히요. …너무 빨리 나으면요, 선생님이요, 안 오시잖―아요."}
+    {t:"…선생님. 오셨네―요. 기다렸어요. 정말로요."},
+    {t:"<em>*려선이 쪼그린 채 고개만 들어 올린다.*</em> 옷 아래, 있죠. 아픈 데요. 말해 주―세요. 제가요, 다 알거든요."},
+    {t:"낫게 해 드릴게요. 천천―히요. …너무 빨리 나으면요, 선생님, 안 오시잖아요."}
   ],
   house:[
     {t:"<em>*칩 더미를 손끝으로 무너뜨리며, 희동이 고개를 든다.*</em>"},
-    {t:"앉으세요, 아가씨. 자리는 비어 있어요. 늘 비어 있죠 ― 누군가 사라진 자리니까."},
-    {t:"<em>*그녀가 카드 한 장을 손가락 사이에서 돌린다.*</em> 운을 믿어요? 난 안 믿어요. 믿는 건 패를 읽는 눈뿐이야."},
-    {t:"흥미롭네, 당신. …오래 살아남는 쪽에 한 판 걸어 볼까요. 물론, 내가 딸 쪽으로."}
+    {t:"앉으세요, 아가씨. 자리는 비어 있어요. 늘 비어 있지. 죽은 놈 자리니까."},
+    {t:"<em>*그녀가 카드 한 장을 손가락 사이에서 돌린다.*</em> 운을 믿어요? 난 안 믿어요. 믿는 건 이 눈, 눈뿐이야."},
+    {t:"말 나온 참에, 당신 앞날에도 좀 걸어 볼까요? 물론, 내가 버는 쪽으로."}
   ],
   police:[
     {t:"<em>*의자를 뒤로 젖힌 채, 해림이 한쪽 눈을 뜬다.*</em>"},
-    {t:"어이. 경찰서를 제 발로 찾아오는 인간은 둘 중 하나야. 멍청하거나, 갈 데가 없거나."},
-    {t:"<em>*그녀가 느릿하게 일어나 팔짱을 낀다.*</em> 손에 묻은 거, 안 닦았네. 뭐, 여기선 증거도 다 마른 먼지가 돼."},
-    {t:"신고하러 온 건 아닐 테고. …앉아. 술이나 한잔해. 잡아넣는 건, 그 다음에 생각하자고."}
+    {t:"경찰서를 제 발로 찾아오는 인간은 둘 중 하나지. 멍청하거나, 갈 데가 없거나."},
+    {t:"<em>*그녀가 느릿하게 일어나 팔짱을 낀다.*</em> 손에 피 안 닦으셨네. 뭐, 여기선 증거 같은 거 사치지. 머리통만 봐도 나 사람 죽였단 행색 나오는데."},
+    {t:"그래서, 갈 데가 없어? 아니면 욕 먹으러 기어올 만큼 멍청한 편?"}
   ],
   cleaner:[
-    {t:"<em>*양동이가 끌리는 소리. 청소가 모퉁이에서 불쑥 나타난다.*</em>"},
-    {t:"손님손님. 바닥 조심하세요. 빨간 거요, 아직 안 말랐거든요."},
-    {t:"<em>*그녀가 대걸레를 어깨에 걸친다.*</em> 닦으면요, 없어져요. 다요. 사람도요, 흔적도요. 제가요, 그런 거 잘하거든요."},
-    {t:"퀴즈 하나 내도 돼요? …아니다. 먼저 닦을게요. 닦고 나서요. 닦고, 나서요."}
+    {t:"<em>*양동이가 끌리는 소리. 청소가 길목 모퉁이에서 불쑥 나타난다.*</em>"},
+    {t:"손님손님. 바닥 조심하세요. 그거, 뇌수랑, 뭐더라? 아 지방. 지방지방지방, 아직 안 말랐거든요."},
+    {t:"<em>*그녀가 대걸레를 어깨에 걸치고 찢어지게 웃었다.*</em> 닦으면 없어집니다요. 사람도. 피도. 흔적 같은 것도 당연히."},
+    {t:"퀴즈 하나 맞춰 볼래요? 청소부 청소의 퀴즈. 청소되는 퀴즈. 머릿속이 깨끗이."}
   ]
 };
 
@@ -1054,10 +1118,19 @@ function renderChoices(){
    ============================================================ */
 function enterDialogue(key){
   const inner=document.getElementById('playInner');
-  inner.classList.add('walking');
+  const hand=document.querySelector('.player-hand');
+  const playScreen=document.getElementById('play');
 
-  flash('fade', ()=>{
+  // 걷기: 본문/손 흔들림 3회 + 거리를 향해 줌하며 페이드아웃
+  inner.classList.add('walking');
+  if(hand) hand.classList.add('hand-walking');
+  playScreen.classList.add('street-walk');
+
+  setTimeout(()=>{
     inner.classList.remove('walking');
+    if(hand) hand.classList.remove('hand-walking');
+    playScreen.classList.remove('street-walk');
+
     const c=CHARS[key];
 
     // 배경/스탠딩/태그 세팅
@@ -1065,7 +1138,17 @@ function enterDialogue(key){
       `radial-gradient(70% 60% at 30% 40%, ${c.color}, #060303 80%)`;
     document.getElementById('dlgTag').innerHTML=
       `<div class="han">${c.han}</div><div class="kr">${c.pron}</div>`;
-
+// 스탠딩 이미지: 파일명이 있으면 해당 PNG, 없으면 기존 실루엣 유지
+    const dlgStand=document.getElementById('dlgStanding');
+    const url=standUrl(key);
+    if(url){
+      dlgStand.style.backgroundImage=`url("${url}")`;
+      dlgStand.style.backgroundSize='contain';
+      dlgStand.style.backgroundRepeat='no-repeat';
+      dlgStand.style.backgroundPosition='bottom right';
+      dlgStand.style.webkitMaskImage='none';
+      dlgStand.style.maskImage='none';
+    }
     document.getElementById('dialogue').classList.add('active');
     document.getElementById('playInner').style.display='none';
 
@@ -1077,7 +1160,7 @@ function enterDialogue(key){
     showDialogueLine();
 
     flash('unfade', null, 600);
-  }, 600);
+  }, 1500);
 }
 
 function renderDialogueProgress(){
@@ -1213,7 +1296,13 @@ function renderProfile(key){
         <div class="p-home"><span class="home-icon"></span> 거주지 — ${c.home}</div>
       </div>
       <!-- 우측 스탠딩: 추후 이미지 삽입 -->
-      <div class="profile-stand"><span>${c.standDesc.replace(/\n/g,'<br>')}</span></div>
+      <!-- 우측 스탠딩: 파일명이 있으면 이미지, 없으면 자리표시 텍스트 -->
+      <div class="profile-stand">${
+        standUrl(key)
+          ? `<img src="${standUrl(key)}" alt="${c.kr} 스탠딩" style="width:100%;height:100%;object-fit:contain;object-position:bottom center;"
+               onerror="this.style.display='none';this.parentNode.innerHTML='<span>${c.standDesc.replace(/\n/g,'<br>')}</span>';">`
+          : `<span>${c.standDesc.replace(/\n/g,'<br>')}</span>`
+      }</div>
     </div>`;
 }
 
