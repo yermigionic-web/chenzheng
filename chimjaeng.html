@@ -457,8 +457,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   font-size:14px;line-height:1.7;color:var(--bone);}
 .p-home{margin-top:14px;display:flex;align-items:center;gap:10px;font-family:var(--font-pixel);font-size:11px;color:var(--bone-dim);}
 /* 거주지 픽셀 아이콘(추후 이미지 삽입) — 자리표시 */
-.home-icon{width:28px;height:28px;background:var(--ash-2);border:1px solid var(--neon-dim);image-rendering:pixelated;
-  background-image:linear-gradient(45deg,var(--neon-dim) 25%,transparent 25%);background-size:7px 7px;}
+.home-icon{width:32px;height:32px;background:transparent;image-rendering:pixelated;flex-shrink:0;}
 /* 프로필 우측 스탠딩(추후 이미지 삽입) — 자리표시 */
 .profile-stand-fixed{
   position:sticky;top:0;float:right;
@@ -769,10 +768,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
             <!-- 플레이어 스프라이트: 추후 GitHub 이미지 링크를 src에 넣으세요.
                  칸(40x40)에 맞춰 자동으로 들어가며, 발밑이 칸 바닥에 정렬됩니다.
                  이미지가 없거나 로드 실패 시 아래 도트 박스(.player-dot)가 대신 표시됩니다. -->
-            <img id="wSpriteImg" class="player-img" alt="플레이어"
+          <img id="wSpriteImg" class="player-img" alt="플레이어"
                  src="https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/miniplayer.png"
                  onerror="this.style.display='none';document.getElementById('wSpriteDot').style.display='block';"
-                 onload="if(this.getAttribute('src')){this.style.display='block';document.getElementById('wSpriteDot').style.display='none';}">
+                 onload="if(this.getAttribute('src')){this.style.display='block';this.style.width='44px';this.style.height='44px';document.getElementById('wSpriteDot').style.display='none';}">
             <div class="player-dot" id="wSpriteDot"></div>
           </div>
         </div>
@@ -930,7 +929,15 @@ const IMG_BASE = "https://raw.githubusercontent.com/yermigionic-web/chenzheng/re
 function standUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+c.stand+".png" : ""; }
  // 치비 이미지 URL 헬퍼 (스탠딩 파일명 앞에 'mini')
 function chibiUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+"mini"+c.stand+".png" : ""; }
-
+// 캐릭터별 배경 이미지 URL 헬퍼 (스탠딩 파일명 + 'bgr')
+// 가챠 카드 이미지 URL 헬퍼 (스탠딩 파일명 + 'gacha')
+function gachaUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+c.stand+"gacha.png" : ""; }
+// 거주지 건물 이미지 URL 헬퍼 (SPOT_DEF의 houseImg를 캐릭터키로 역참조)
+function houseUrlByChar(key){
+  for(const k in SPOT_DEF){ if(SPOT_DEF[k].char===key && SPOT_DEF[k].houseImg) return IMG_BASE+SPOT_DEF[k].houseImg+".png"; }
+  return "";
+}
+function bgrUrl(key){ const c=CHARS[key]; return c && c.stand ? IMG_BASE+c.stand+"bgr.png" : ""; }
 // 게임 체험 선택지(장소 → 캐릭터)
 const PLACES = [
   {key:"meat",   place:"정육점",   sub:"肉店"},
@@ -1132,9 +1139,16 @@ function enterDialogue(key){
 
     const c=CHARS[key];
 
-    // 배경/스탠딩/태그 세팅
-    document.getElementById('dlgBg').style.background=
-      `radial-gradient(70% 60% at 30% 40%, ${c.color}, #060303 80%)`;
+    // 배경: 캐릭터별 이미지가 있으면 이미지 + 어두운 오버레이, 없으면 컬러 그라데이션
+    const bg=bgrUrl(key);
+    const dlgBgEl=document.getElementById('dlgBg');
+    if(bg){
+      dlgBgEl.style.background=
+        `linear-gradient(180deg, rgba(6,3,3,.25), rgba(6,3,3,.7)), url("${bg}") center/cover no-repeat`;
+    } else {
+      dlgBgEl.style.background=
+        `radial-gradient(70% 60% at 30% 40%, ${c.color}, #060303 80%)`;
+    }
     document.getElementById('dlgTag').innerHTML=
       `<div class="han">${c.han}</div><div class="kr">${c.pron}</div>`;
 // 스탠딩 이미지: 파일명이 있으면 해당 PNG, 없으면 기존 실루엣 유지
@@ -1265,7 +1279,19 @@ function openProfile(key, row){
   row.classList.add('sel');
 
   const c=CHARS[key];
-  document.getElementById('gachaHan').textContent=c.han;
+  // 가챠 카드: 이미지가 있으면 카드에 깔고, 없으면 한자 표시
+  const gImg=gachaUrl(key);
+  const gCard=document.querySelector('.gacha-card');
+  const gHanEl=document.getElementById('gachaHan');
+  if(gImg){
+    gCard.style.backgroundImage=`url("${gImg}")`;
+    gCard.style.backgroundSize='cover';
+    gCard.style.backgroundPosition='center';
+    gHanEl.textContent='';
+  } else {
+    gCard.style.backgroundImage='';
+    gHanEl.textContent=c.han;
+  }
   const g=document.getElementById('gacha');
   g.classList.add('active');
 
@@ -1301,7 +1327,7 @@ function renderProfile(key){
           <div class="row"><span class="k">말투</span><span class="v">${c.tone}</span></div>
         </div>
         <div class="p-quote">“${c.quote}”</div>
-        <div class="p-home"><span class="home-icon"></span> 거주지 — ${c.home}</div>
+        <div class="p-home"><span class="home-icon"${houseUrlByChar(key)?` style="background-image:url('${houseUrlByChar(key)}');background-size:contain;background-repeat:no-repeat;background-position:center;border:none;"`:''}></span> 거주지 — ${c.home}</div>
       </div>
     </div>`;
 }
@@ -1309,7 +1335,7 @@ function renderProfile(key){
 /* ============================================================
    [3] 세계관 맵 — 타일 그리드 워킹 엔진
    ============================================================ */
-const TILE = 40;             // 타일 픽셀 크기
+const TILE = 56;            // 타일 픽셀 크기
 let grid = [];               // 2차원 문자 배열
 let px=0, py=0;              // 플레이어 타일 좌표
 let worldBuilt=false;
