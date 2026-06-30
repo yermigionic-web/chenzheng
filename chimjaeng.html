@@ -558,22 +558,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   display:flex;align-items:flex-end;justify-content:center;pointer-events:none;
   transition:left .18s linear, top .18s linear;}
 /* 실제 캐릭터 스프라이트 이미지(추후 삽입) — 칸에 쏙 맞고 발밑이 바닥에 닿음 */
-.player-img{display:none;width:100%;height:100%;object-fit:contain;object-position:bottom center;
+.player-img{display:none;
+  width:32px;height:32px;max-width:32px;max-height:32px;margin:0 auto;
+  object-fit:contain;object-position:bottom center;
   image-rendering:pixelated;
   filter:drop-shadow(0 0 6px rgba(57,255,20,.5)) drop-shadow(0 2px 0 rgba(139,0,0,.4));}
-/* src가 비어 있을 때 깨진 이미지 아이콘이 잠깐 보이지 않도록 기본 숨김.
-   src를 채우면 onload에서 자동으로 표시됩니다. */
-
-/* fallback 도트 박스(이미지 없을 때만 표시) */
-.player-dot{width:62%;height:78%;position:relative;align-self:center;
-  background:linear-gradient(180deg,#2b2420,#15100e);
-  border:1px solid var(--neon);box-shadow:0 0 10px rgba(57,255,20,.5);
-  image-rendering:pixelated;}
-.player-dot::before{content:"";position:absolute;left:50%;top:-3px;transform:translateX(-50%);
-  width:50%;height:30%;background:var(--bone);border:1px solid #000;}
-.player-dot::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
-  width:90%;height:4px;background:radial-gradient(ellipse,rgba(139,0,0,.7),transparent 70%);}
-/* 걷기 살짝 눌림 — 이미지/도트 둘 다에 적용되도록 칸 전체에 건다 */
 #wPlayer.step .player-img,#wPlayer.step .player-dot{animation:stepSquash .18s ease;}
 @keyframes stepSquash{0%{transform:scaleY(.85) scaleX(1.1)}100%{transform:scaleY(1) scaleX(1)}}
 
@@ -781,7 +770,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
                  칸(40x40)에 맞춰 자동으로 들어가며, 발밑이 칸 바닥에 정렬됩니다.
                  이미지가 없거나 로드 실패 시 아래 도트 박스(.player-dot)가 대신 표시됩니다. -->
             <img id="wSpriteImg" class="player-img" alt="플레이어"
-                 src=""
+                 src="https://raw.githubusercontent.com/yermigionic-web/chenzheng/refs/heads/main/miniplayer.png"
                  onerror="this.style.display='none';document.getElementById('wSpriteDot').style.display='block';"
                  onload="if(this.getAttribute('src')){this.style.display='block';document.getElementById('wSpriteDot').style.display='none';}">
             <div class="player-dot" id="wSpriteDot"></div>
